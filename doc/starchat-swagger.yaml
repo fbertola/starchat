@@ -4207,7 +4207,8 @@ components:
       description: >-
         an enumerated value which indicates whether the state was triggered via actions (e.g. via buttons, or input validation).
         Values:
-          * `BUTTON` -> the answer was triggered by a button ; ACTION -> the answer was triggered by an action
+          * `BUTTON` -> the answer was triggered by a button
+          * `ACTION` -> the answer was triggered by an action
           * `UNSPECIFIED` -> usually this information is not applicable except in the other two cases mentioned before.
       example: button
       enum:

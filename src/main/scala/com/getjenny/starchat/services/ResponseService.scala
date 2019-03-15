@@ -12,7 +12,7 @@ import com.getjenny.starchat.entities._
 import com.getjenny.starchat.services.esclient.DecisionTableElasticClient
 import scalaz.Scalaz._
 
-import scala.collection.immutable.{List, Map}
+import scala.collection.immutable.Map
 import scala.concurrent.duration._
 import scala.concurrent.{Await, Future}
 import scala.util.{Failure, Success, Try}
