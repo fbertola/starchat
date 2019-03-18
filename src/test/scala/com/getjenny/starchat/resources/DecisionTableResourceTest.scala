@@ -330,11 +330,11 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
     "return an HTTP code 200 when getting next response by state" in {
       val request = ResponseRequestIn(conversationId = "conv_12131",
         traversedStates = None,
-        userInput = Some(ResponseRequestInUserInput(text = Some("It doesn't matter what I say here when state is defined"), img = None
+        userInput = Some(ResponseRequestInUserInput(text = None, img = None
         )),
         state = Some(List("forgot_password")),
         data = Some(Map("name" -> "Donald Duck", "job" -> "idle")),
-        threshold = Some(0),
+        threshold = None,
         evaluationClass = None,
         maxResults = Some(1),
         searchAlgorithm = Some(SearchAlgorithm.NGRAM3)
@@ -351,10 +351,39 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
   }
 
   it should {
+    "return an HTTP code 200 when restricting the search to a subset of states" in {
+      val request = ResponseRequestIn(
+        conversationId = "conv_12345",
+        traversedStates = None,
+        userInput = Some(ResponseRequestInUserInput(
+          text = Some("I forgot my password"),
+          img = None
+        )),
+        state = Some(List(
+          "help",
+          "contribute",
+          "forgot_password"
+        )),
+        data = None,
+        threshold = Some(0),
+        evaluationClass = None,
+        maxResults = Some(10),
+        searchAlgorithm = Some(SearchAlgorithm.NGRAM2)
+      )
+
+      Post("/index_getjenny_english_0/get_next_response", request) ~> addCredentials(testUserCredentials) ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val response = responseAs[List[ResponseRequestOut]]
+        response.map(_.state) should contain only ("help", "contribute", "forgot_password")
+      }
+    }
+  }
+
+  it should {
     "return an HTTP code 202 when getting next response by state that doesn't exist" in {
       val request = ResponseRequestIn(conversationId = "conv_12131",
         traversedStates = None,
-        userInput = Some(ResponseRequestInUserInput(text = Some("Some"), img = None
+        userInput = Some(ResponseRequestInUserInput(text = None, img = None
         )),
         state = Some(List("this_state_does_not_exist")),
         data = None,
