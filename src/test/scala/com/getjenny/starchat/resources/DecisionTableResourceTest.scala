@@ -102,12 +102,37 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
         version = None
       )
 
+      val decisionTableRequest2 = DTDocument(
+        state = "dont_tell_password",
+        executionOrder = 0,
+        maxStateCount = 0,
+        analyzer = "bor(keyword(\"password\"))",
+        queries = List(),
+        bubble = "Never tell your password to anyone!",
+        action = "",
+        actionInput = Map(),
+        stateData = Map(),
+        successValue = "",
+        failureValue = "",
+        evaluationClass = Some("default"),
+        version = None
+      )
+
       Post(s"/index_getjenny_english_0/decisiontable?refresh=1", decisionTableRequest) ~> addCredentials(testUserCredentials) ~> routes ~> check {
         status shouldEqual StatusCodes.Created
         val response = responseAs[IndexDocumentResult]
         response.created should be (true)
         response.dtype should be ("state")
         response.id should be ("forgot_password")
+        response.index should be ("index_getjenny_english_0.state")
+        response.version should be (1)
+      }
+      Post(s"/index_getjenny_english_0/decisiontable?refresh=1", decisionTableRequest2) ~> addCredentials(testUserCredentials) ~> routes ~> check {
+        status shouldEqual StatusCodes.Created
+        val response = responseAs[IndexDocumentResult]
+        response.created should be (true)
+        response.dtype should be ("state")
+        response.id should be ("dont_tell_password")
         response.index should be ("index_getjenny_english_0.state")
         response.version should be (1)
       }
@@ -120,7 +145,7 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
         state = "forgot_password",
         executionOrder = 0,
         maxStateCount = 0,
-        analyzer = "keyword(\"password\")",
+        analyzer = "reinfConjunction(bor(keyword(\"forgot\"), keyword(\"don't remember\")), bor(keyword(\"password\")))",
         queries = List("I forgot my password",
           "my password is wrong",
           "don't remember the password"),
@@ -153,7 +178,8 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
         executionOrder = None,
         maxStateCount = None,
         analyzer = None,
-        queries = Some(List("I forgot my password",
+        queries = Some(List(
+          "I forgot my password",
           "my password is wrong",
           "don't remember the password",
           "I don't know my password")),
@@ -220,7 +246,7 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
       Get("/index_getjenny_english_0/decisiontable?dump=true") ~> addCredentials(testUserCredentials) ~> routes ~> check {
         status shouldEqual StatusCodes.OK
         val response = responseAs[SearchDTDocumentsResults]
-        response.total should be (20)
+        response.total should be (21)
       }
     }
   }
@@ -330,13 +356,12 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
     "return an HTTP code 200 when getting next response by state" in {
       val request = ResponseRequestIn(conversationId = "conv_12131",
         traversedStates = None,
-        userInput = Some(ResponseRequestInUserInput(text = Some("It doesn't matter what I say here when state is defined"), img = None
-        )),
+        userInput = None,
         state = Some(List("forgot_password")),
         data = Some(Map("name" -> "Donald Duck", "job" -> "idle")),
-        threshold = Some(0),
+        threshold = None,
         evaluationClass = None,
-        maxResults = Some(1),
+        maxResults = None,
         searchAlgorithm = Some(SearchAlgorithm.NGRAM3)
       )
 
@@ -351,12 +376,66 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
   }
 
   it should {
-    "return an HTTP code 202 when getting next response by state that doesn't exist" in {
+    "return an HTTP code 200 when restricting the search to a subset of states" in {
+      val request = ResponseRequestIn(
+        conversationId = "conv_12345",
+        traversedStates = None,
+        userInput = Some(ResponseRequestInUserInput(
+          text = Some("I forgot my password"),
+          img = None
+        )),
+        state = Some(List(
+          "help",
+          "contribute",
+          "forgot_password",
+          "dont_tell_password"
+        )),
+        data = None,
+        threshold = Some(1),
+        evaluationClass = None,
+        maxResults = Some(10),
+        searchAlgorithm = Some(SearchAlgorithm.NGRAM2)
+      )
+
+      val request2 = ResponseRequestIn(
+        conversationId = "conv_12345",
+        traversedStates = None,
+        userInput = Some(ResponseRequestInUserInput(
+          text = Some("I forgot my password"),
+          img = None
+        )),
+        state = Some(List(
+          "help",
+          "contribute",
+          "forgot_password"
+        )),
+        data = None,
+        threshold = Some(1),
+        evaluationClass = None,
+        maxResults = Some(10),
+        searchAlgorithm = Some(SearchAlgorithm.NGRAM2)
+      )
+
+      Post("/index_getjenny_english_0/get_next_response", request) ~> addCredentials(testUserCredentials) ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val response = responseAs[List[ResponseRequestOut]]
+        response.map(_.state) should contain only ("forgot_password", "dont_tell_password")
+      }
+
+      Post("/index_getjenny_english_0/get_next_response", request2) ~> addCredentials(testUserCredentials) ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val response = responseAs[List[ResponseRequestOut]]
+        response.map(_.state) should contain only "forgot_password"
+      }
+    }
+  }
+
+  it should {
+    "return an HTTP code 202 when get_next_response request contains a non-existing state" in {
       val request = ResponseRequestIn(conversationId = "conv_12131",
         traversedStates = None,
-        userInput = Some(ResponseRequestInUserInput(text = Some("Some"), img = None
-        )),
-        state = Some(List("this_state_does_not_exist")),
+        userInput = None,
+        state = Some(List("forgot_password", "this_state_does_not_exist")),
         data = None,
         threshold = Some(0),
         evaluationClass = None,
@@ -395,7 +474,7 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
     "return an HTTP code 200 when getting next response by search" in {
       val request = ResponseRequestIn(conversationId = "conv_12131",
         traversedStates = Some(Vector("state_0", "state_1", "state_2", "state_3")),
-        userInput = Some(ResponseRequestInUserInput(text = Some("How can I change my password?"), img = None
+        userInput = Some(ResponseRequestInUserInput(text = Some("I forgot my password"), img = None
         )),
         state = None,
         data = Some(Map("name" -> "Donald Duck", "job" -> "idle")),
@@ -446,7 +525,7 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
       Delete("/index_getjenny_english_0/decisiontable/all") ~> addCredentials(testUserCredentials) ~> routes ~> check {
         status shouldEqual StatusCodes.OK
         val response = responseAs[DeleteDocumentsSummaryResult]
-        response.deleted should be (19)
+        response.deleted should be (20)
       }
     }
   }
