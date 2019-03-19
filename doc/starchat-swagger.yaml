@@ -1832,7 +1832,7 @@ paths:
             schema:
               $ref: '#/components/schemas/QAAggregatedAnalyticsRequest'
       responses:
-        '200':
+        '201':
           description: success
           content:
             application/json:
@@ -4184,6 +4184,7 @@ components:
         without a document containing the transferred value are assumed completed entirely by StarChat.
         Values:
           * `TRANSFERRED` -> can be returned to the user as response
+          * `NOTTRANSFERRED` -> the conversation was not transferred
           * `UNSPECIFIED` -> usually in the middle of a conversation this value is not set, it is known at the end of the conversation or when the user requests to escalate
       example: TRANSFERRED
       enum:
@@ -4254,19 +4255,15 @@ components:
           * `avgAlgorithmConvScore` -> the average score for the conversations (transferred and non-transferred), the scores are provided by an algorithm
           * `avgAlgorithmAnswerScore` -> the average score for all the Answers (transferred and non-transferred), the scores are provided by an algorithm
           * `scoreHistogram` -> the distribution of scores, an histogram (transferred and non-transferred)
-          * `scoreHistogramNonTransferred` -> the distribution of scores for the non-transferred conversations, an histogram
+          * `scoreHistogramNotTransferred` -> the distribution of scores for the non-transferred conversations, an histogram
           * `scoreHistogramTransferred` -> the distribution of scores for the transferred conversations, an histogram
           * `conversationsHistogram` -> time range histogram of the number of conversations on a time range (transferred and non-transferred)
-          * `conversationsNonTransferredHistogram` -> time range histogram of the number of conversations on a time range (non-transferred only)
+          * `conversationsNotTransferredHistogram` -> time range histogram of the number of conversations on a time range (non-transferred only)
           * `conversationsTransferredHistogram` -> time range histogram of the number of conversations on a time range (transferred only)
-          * `avgFeedbackNonTransferredConvScoreOverTime` -> average score for the conversations (non-transferred only) on each time interval
+          * `avgFeedbackNotTransferredConvScoreOverTime` -> average score for the conversations (non-transferred only) on each time interval
           * `avgFeedbackTransferredConvScoreOverTime` -> average score for the conversations (transferred only) on each time interval
-          * `avgAlgorithmNonTransferredConvScoreOverTime` -> average score for the conversations (non-transferred only) on each time interval, the scores are provided by an algorithm
+          * `avgAlgorithmNotTransferredConvScoreOverTime` -> average score for the conversations (non-transferred only) on each time interval, the scores are provided by an algorithm
           * `avgAlgorithmTransferredConvScoreOverTime` -> average score for the conversations (transferred only) on each time interval, the scores are provided by an algorithm
-          * `avgFeedbackNonTransferredAnswerScoreOverTime` -> average score for the answers (non-transferred only) on each time interval
-          * `avgFeedbackTransferredAnswerScoreOverTime` -> average score for the answers (transferred only) on each time interval
-          * `avgAlgorithmNonTransferredAnswerScoreOverTime` -> average score for the answers (non-transferred only) on each time interval, the scores are provided by an algorithm
-          * `avgAlgorithmTransferredAnswerScoreOverTime` -> average score for the answers (transferred only) on each time interval, the scores are provided by an algorithm
           * `avgFeedbackConvScoreOverTime` -> average score for the conversations (transferred and non-transferred) on each time interval
           * `avgAlgorithmAnswerScoreOverTime` -> average score for the answers (transferred and transferred) on each time interval
           * `avgFeedbackAnswerScoreOverTime` -> average score for the answers (transferred and non-transferred) on each time interval, the scores are provided by an algorithm
@@ -4278,18 +4275,18 @@ components:
         - avgAlgorithmConvScore
         - avgAlgorithmAnswerScore
         - scoreHistogram
-        - scoreHistogramNonTransferred
+        - scoreHistogramNotTransferred
         - scoreHistogramTransferred
         - conversationsHistogram
-        - conversationsNonTransferredHistogram
+        - conversationsNotTransferredHistogram
         - conversationsTransferredHistogram
-        - avgFeedbackNonTransferredConvScoreOverTime
+        - avgFeedbackNotTransferredConvScoreOverTime
         - avgFeedbackTransferredConvScoreOverTime
-        - avgAlgorithmNonTransferredConvScoreOverTime
+        - avgAlgorithmNotTransferredConvScoreOverTime
         - avgAlgorithmTransferredConvScoreOverTime
-        - avgFeedbackNonTransferredAnswerScoreOverTime
+        - avgFeedbackNotTransferredAnswerScoreOverTime
         - avgFeedbackTransferredAnswerScoreOverTime
-        - avgAlgorithmNonTransferredAnswerScoreOverTime
+        - avgAlgorithmNotTransferredAnswerScoreOverTime
         - avgAlgorithmTransferredAnswerScoreOverTime
         - avgFeedbackConvScoreOverTime
         - avgAlgorithmAnswerScoreOverTime
@@ -4363,7 +4360,7 @@ components:
                 format: long
                 description: how many score falls in the bucket
             example: [{"key": 0.0, "docCount": 13213}, {"key": 1.0, "docCount": 213}, {"key": 4.0, "docCount": 1013}]
-        scoreHistogramNonTransferred:
+        scoreHistogramNotTransferred:
           type: array
           description: >-
             the distribution of scores for the non-transferred conversations, an histogram
@@ -4421,7 +4418,7 @@ components:
              {"key": 1550534500000, "keyAsString": "2019-02-19 : 01:00:00", "docCount": 113},
              {"key": 1550534600000, "keyAsString": "2019-02-19 : 02:00:00", "docCount": 1},
              {"key": 1550534700000, "keyAsString": "2019-02-19 : 03:00:00", "docCount": 5331}]
-        conversationsNonTransferredHistogram:
+        conversationsNotTransferredHistogram:
           type: array
           description: >-
             time range histogram of the number of conversations on a time range (non-transferred only)
@@ -4469,7 +4466,7 @@ components:
              {"key": 1550534500000, "keyAsString": "2019-02-19 : 01:00:00", "docCount": 43},
              {"key": 1550534600000, "keyAsString": "2019-02-19 : 02:00:00", "docCount": 351},
              {"key": 1550534700000, "keyAsString": "2019-02-19 : 03:00:00", "docCount": 5331}]
-        avgFeedbackNonTransferredConvScoreOverTime:
+        avgFeedbackNotTransferredConvScoreOverTime:
           type: array
           description: >-
             average score for the conversations (non-transferred only) on each time interval
@@ -4525,7 +4522,7 @@ components:
              {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
              {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
              {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgAlgorithmNonTransferredConvScoreOverTime:
+        avgAlgorithmNotTransferredConvScoreOverTime:
           type: array
           description: >-
             average score for the conversations (non-transferred only) on each time interval, the scores are provided by an algorithm
@@ -4557,118 +4554,6 @@ components:
           type: array
           description: >-
             average score for the conversations (transferred only) on each time interval, the scores are provided by an algorithm
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgFeedbackNonTransferredAnswerScoreOverTime:
-          type: array
-          description: >-
-            average score for the answers (non-transferred only) on each time interval
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgFeedbackTransferredAnswerScoreOverTime:
-          type: array
-          description: >-
-            average score for the answers (transferred only) on each time interval
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgAlgorithmNonTransferredAnswerScoreOverTime:
-          type: array
-          description: >-
-            average score for the answers (non-transferred only) on each time interval, the scores are provided by an algorithm
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgAlgorithmTransferredAnswerScoreOverTime:
-          type: array
-          description: >-
-            average score for the answers (transferred only) on each time interval, the scores are provided by an algorithm
             Only the buckets with more than one document will be returned.
           items:
             type: object

@@ -55,28 +55,30 @@ trait DecisionTableResource extends StarChatResource {
   def decisionTableUploadCSVRoutes: Route = handleExceptions(routesExceptionHandler) {
     pathPrefix(indexRegex ~ Slash ~ "decisiontable" ~ Slash ~ "upload_csv") { indexName =>
       pathEnd {
-        authenticateBasicAsync(realm = authRealm, authenticator = authenticator.authenticator) { user =>
-          authorizeAsync(_ =>
-            authenticator.hasPermissions(user, indexName, Permissions.write)) {
-            storeUploadedFile("csv", tempDestination) {
-              case (_, file) =>
-                val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker(callTimeout = 60.seconds)
-                onCompleteWithBreaker(breaker)(decisionTableService.indexCSVFileIntoDecisionTable(indexName, file, 0)) {
-                  case Success(t) =>
-                    file.delete()
-                    completeResponse(StatusCodes.OK, StatusCodes.BadRequest, Option {
-                      t
-                    })
-                  case Failure(e) =>
-                    log.error("index(" + indexName + ") route=decisionTableUploadCSVRoutes method=POST: " + e.getMessage)
-                    if (file.exists()) {
+        post {
+          authenticateBasicAsync(realm = authRealm, authenticator = authenticator.authenticator) { user =>
+            authorizeAsync(_ =>
+              authenticator.hasPermissions(user, indexName, Permissions.write)) {
+              storeUploadedFile("csv", tempDestination) {
+                case (_, file) =>
+                  val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker(callTimeout = 60.seconds)
+                  onCompleteWithBreaker(breaker)(decisionTableService.indexCSVFileIntoDecisionTable(indexName, file, 0)) {
+                    case Success(t) =>
                       file.delete()
-                    }
-                    completeResponse(StatusCodes.BadRequest,
-                      Option {
-                        ReturnMessageData(code = 107, message = e.getMessage)
+                      completeResponse(StatusCodes.OK, StatusCodes.BadRequest, Option {
+                        t
                       })
-                }
+                    case Failure(e) =>
+                      log.error("index(" + indexName + ") route=decisionTableUploadCSVRoutes method=POST: " + e.getMessage)
+                      if (file.exists()) {
+                        file.delete()
+                      }
+                      completeResponse(StatusCodes.BadRequest,
+                        Option {
+                          ReturnMessageData(code = 107, message = e.getMessage)
+                        })
+                  }
+              }
             }
           }
         }

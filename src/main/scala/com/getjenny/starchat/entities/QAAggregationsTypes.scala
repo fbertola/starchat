@@ -12,19 +12,15 @@ object QAAggregationsTypes extends Enumeration {
   avgAlgorithmConvScore, // the average score for the conversations (transferred and non-transferred), the scores are provided by an algorithm
   avgAlgorithmAnswerScore, // the average score for all the Answers (transferred and non-transferred), the scores are provided by an algorithm
   scoreHistogram, // the distribution of scores, an histogram (transferred and non-transferred)
-  scoreHistogramNonTransferred, // the distribution of scores for the non-transferred conversations, an histogram
+  scoreHistogramNotTransferred, // the distribution of scores for the non-transferred conversations, an histogram
   scoreHistogramTransferred, // the distribution of scores for the transferred conversations, an histogram
   conversationsHistogram, // time range histogram of the number of conversations on a time range (transferred and non-transferred)
-  conversationsNonTransferredHistogram, // time range histogram of the number of conversations on a time range (non-transferred only)
+  conversationsNotTransferredHistogram, // time range histogram of the number of conversations on a time range (non-transferred only)
   conversationsTransferredHistogram, // time range histogram of the number of conversations on a time range (transferred only)
-  avgFeedbackNonTransferredConvScoreOverTime, // average score for the conversations (non-transferred only) on each time interval
+  avgFeedbackNotTransferredConvScoreOverTime, // average score for the conversations (non-transferred only) on each time interval
   avgFeedbackTransferredConvScoreOverTime, // average score for the conversations (transferred only) on each time interval
-  avgAlgorithmNonTransferredConvScoreOverTime, // average score for the conversations (non-transferred only) on each time interval, the scores are provided by an algorithm
+  avgAlgorithmNotTransferredConvScoreOverTime, // average score for the conversations (non-transferred only) on each time interval, the scores are provided by an algorithm
   avgAlgorithmTransferredConvScoreOverTime, // average score for the conversations (transferred only) on each time interval, the scores are provided by an algorithm
-  avgFeedbackNonTransferredAnswerScoreOverTime, // average score for the answers (non-transferred only) on each time interval
-  avgFeedbackTransferredAnswerScoreOverTime, // average score for the answers (transferred only) on each time interval
-  avgAlgorithmNonTransferredAnswerScoreOverTime, // average score for the answers (non-transferred only) on each time interval, the scores are provided by an algorithm
-  avgAlgorithmTransferredAnswerScoreOverTime, // average score for the answers (transferred only) on each time interval, the scores are provided by an algorithm
   avgFeedbackConvScoreOverTime, // average score for the conversations (transferred and non-transferred) on each time interval
   avgAlgorithmAnswerScoreOverTime, // average score for the answers (transferred and transferred) on each time interval
   avgFeedbackAnswerScoreOverTime, // average score for the answers (transferred and non-transferred) on each time interval, the scores are provided by an algorithm

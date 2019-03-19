@@ -52,6 +52,7 @@ trait RestInterface extends RootAPIResource
     LoggingEntities.logRequestAndResult(kbUpdateTermsRoutes) ~
     LoggingEntities.logRequestAndResult(kbCountersCacheSizeRoutes) ~
     LoggingEntities.logRequestAndResultReduced(kbQuestionAnswerConversationsRoutes) ~
+    LoggingEntities.logRequestAndResultReduced(kbQuestionAnswerAnalyticsRoutes) ~
     LoggingEntities.logRequestAndResultReduced(pdQuestionAnswerRoutes) ~
     LoggingEntities.logRequestAndResultReduced(pdQuestionAnswerStreamRoutes) ~
     LoggingEntities.logRequestAndResult(pdQuestionAnswerSearchRoutes) ~
@@ -61,6 +62,7 @@ trait RestInterface extends RootAPIResource
     LoggingEntities.logRequestAndResult(pdUpdateTermsRoutes) ~
     LoggingEntities.logRequestAndResult(pdCountersCacheSizeRoutes) ~
     LoggingEntities.logRequestAndResultReduced(pdQuestionAnswerConversationsRoutes) ~
+    LoggingEntities.logRequestAndResultReduced(pdQuestionAnswerAnalyticsRoutes) ~
     LoggingEntities.logRequestAndResultReduced(clQuestionAnswerRoutes) ~
     LoggingEntities.logRequestAndResultReduced(clQuestionAnswerStreamRoutes) ~
     LoggingEntities.logRequestAndResult(clQuestionAnswerSearchRoutes) ~
@@ -70,6 +72,7 @@ trait RestInterface extends RootAPIResource
     LoggingEntities.logRequestAndResult(clUpdateTermsRoutes)~
     LoggingEntities.logRequestAndResult(clCountersCacheSizeRoutes) ~
     LoggingEntities.logRequestAndResultReduced(clQuestionAnswerConversationsRoutes) ~
+    LoggingEntities.logRequestAndResultReduced(pdQuestionAnswerAnalyticsRoutes) ~
     LoggingEntities.logRequestAndResult(termsExtractionRoutes) ~
     LoggingEntities.logRequestAndResult(synExtractionRoutes) ~
     LoggingEntities.logRequestAndResult(freqExtractionRoutes) ~

@@ -29,7 +29,8 @@ object Agent extends Enumeration {
 
 object Escalated extends Enumeration {
   val TRANSFERRED,  /** when the conversation is being transferred to the customer care */
-  UNSPECIFIED = Escalated.Value  /** usually in the middle of a conversation this value is not set,
+  NOTTRANSFERRED,
+  UNSPECIFIED = Escalated.Value /** usually in the middle of a conversation this value is not set,
               it is known at the end of the conversation or when the user requests to escalate.*/
   def value(v: String) = values.find(_.toString === v).getOrElse(UNSPECIFIED)
 }
@@ -72,16 +73,16 @@ case class QADocumentAnnotations(
                                   doctype: Option[Doctypes.Value] = Some(Doctypes.NORMAL), /* document type */
                                   state: Option[String] = None, /* eventual link to any of the state machine states */
                                   agent: Option[Agent.Value] = Some(Agent.STARCHAT),
-                                  escalated: Option[Escalated.Value] = Some(Escalated.UNSPECIFIED),
+                                  escalated: Option[Escalated.Value] = None,
                                   answered: Option[Answered.Value] = Some(Answered.ANSWERED),
                                   triggered: Option[Triggered.Value] = Some(Triggered.UNSPECIFIED),
                                   followup: Option[Followup.Value] = Some(Followup.UNSPECIFIED),
                                   feedbackConv: Option[String] = None, /* A feedback provided by the user to the conversation */
-                                  feedbackConvScore: Option[Double] = Some{0.0}, /* a field to store the score provided by the user to the conversation */
-                                  algorithmConvScore: Option[Double] = Some{0.0}, /* a field to store the score calculated by an algorithm related to the conversation i.e. a sentiment
+                                  feedbackConvScore: Option[Double] = None, /* a field to store the score provided by the user to the conversation */
+                                  algorithmConvScore: Option[Double] = None, /* a field to store the score calculated by an algorithm related to the conversation i.e. a sentiment
 analysis tool (for future use) */
-                                  feedbackAnswerScore: Option[Double] = Some{0.0}, /* description: a field to store the score provided by the user for the answer */
-                                  algorithmAnswerScore: Option[Double] = Some{0.0}, /* a field to store the score calculated by an algorithm related to the answer i.e. a sentiment
+                                  feedbackAnswerScore: Option[Double] = None, /* description: a field to store the score provided by the user for the answer */
+                                  algorithmAnswerScore: Option[Double] = None, /* a field to store the score calculated by an algorithm related to the answer i.e. a sentiment
 analysis tool (for future use) */
                                   start: Option[Boolean] = Some(false), /* event determined when a start state is loaded */
                                 )

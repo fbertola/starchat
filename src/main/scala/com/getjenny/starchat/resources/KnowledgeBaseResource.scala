@@ -30,4 +30,6 @@ trait KnowledgeBaseResource extends StarChatResource {
   def kbCountersCacheSizeRoutes: Route = qaResource.countersCacheSizeRoutes
 
   def kbQuestionAnswerConversationsRoutes: Route = qaResource.questionAnswerConversationsRoutes
+
+  def kbQuestionAnswerAnalyticsRoutes: Route = qaResource.questionAnswerAnalyticsRoutes
 }

@@ -308,6 +308,39 @@ class QAResource(questionAnswerService: QuestionAnswerService, routeName: String
     }
   }
 
+  def questionAnswerAnalyticsRoutes: Route = handleExceptions(routesExceptionHandler) {
+    pathPrefix(indexRegex ~ Slash ~ "analytics" ~ Slash ~ routeName) { indexName =>
+      pathEnd {
+        post {
+          authenticateBasicAsync(realm = authRealm,
+            authenticator = authenticator.authenticator) { user =>
+            extractRequest { request =>
+              authorizeAsync(_ =>
+                authenticator.hasPermissions(user, indexName, Permissions.read)) {
+                entity(as[QAAggregatedAnalyticsRequest]) { analytics =>
+                  val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker()
+                  onCompleteWithBreaker(breaker)(Future{questionAnswerService.analytics(indexName, analytics)}) {
+                    case Success(t) =>
+                      completeResponse(StatusCodes.OK, StatusCodes.BadRequest, Option {
+                        t
+                      })
+                    case Failure(e) =>
+                      log.error("index(" + indexName + ") uri=(" + request.uri +
+                        ") method=(" + request.method.name + ") : " + e.getMessage)
+                      completeResponse(StatusCodes.BadRequest,
+                        Option {
+                          ReturnMessageData(code = 110, message = e.getMessage)
+                        })
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   def questionAnswerSearchRoutes: Route = handleExceptions(routesExceptionHandler) {
     pathPrefix(indexRegex ~ Slash ~ routeName ~ Slash ~ "search") { indexName =>
       pathEnd {
