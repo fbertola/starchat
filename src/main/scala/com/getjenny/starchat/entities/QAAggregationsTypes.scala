@@ -7,8 +7,7 @@ package com.getjenny.starchat.entities
 import scalaz.Scalaz._
 
 object QAAggregationsTypes extends Enumeration {
-  val totalConversations, // the total number of conversations (transferred and non-transferred)
-  avgFeedbackConvScore, // the average score for the conversations (transferred and non-transferred)
+  val avgFeedbackConvScore, // the average score for the conversations (transferred and non-transferred)
   avgFeedbackAnswerScore, // the average score for all the Answers (transferred and non-transferred)
   avgAlgorithmConvScore, // the average score for the conversations (transferred and non-transferred), the scores are provided by an algorithm
   avgAlgorithmAnswerScore, // the average score for all the Answers (transferred and non-transferred), the scores are provided by an algorithm

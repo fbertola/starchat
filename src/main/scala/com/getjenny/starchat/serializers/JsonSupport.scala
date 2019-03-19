@@ -10,7 +10,7 @@ import akka.http.scaladsl.unmarshalling.Unmarshaller
 import akka.stream.scaladsl.Flow
 import akka.util.ByteString
 import com.getjenny.analyzer.expressions.AnalyzersData
-import com.getjenny.starchat.entities._
+import com.getjenny.starchat.entities.{QAAggregatedAnalyticsRequest, _}
 import scalaz.Scalaz._
 import spray.json._
 
@@ -59,6 +59,12 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
       case _ => throw DeserializationException("QAAggregationsTypesFormat string expected")
     }
   }
+
+  implicit val qaAggregatedAnalyticsRequestFormat = jsonFormat6(QAAggregatedAnalyticsRequest)
+  implicit val scoreHistogramFormat = jsonFormat2(ScoreHistogram)
+  implicit val conversationsHistogramFormat = jsonFormat3(ConversationsHistogram)
+  implicit val scoresOverTimeFormat = jsonFormat4(ScoresOverTime)
+  implicit val qaAggregatedAnalyticsFormat = jsonFormat9(QAAggregatedAnalytics)
 
   ////////////////////////////
   implicit val doctypesUnmarshalling:

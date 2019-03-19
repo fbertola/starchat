@@ -4249,7 +4249,6 @@ components:
       type: string
       description: >-
         type of statistical aggregated data generated from a QA data type. Values:
-          * `totalConversations` -> the total number of conversations (transferred and non-transferred)
           * `avgFeedbackConvScore` -> the average score for the conversations (transferred and non-transferred)
           * `avgFeedbackAnswerScore` -> the average score for all the Answers (transferred and non-transferred)
           * `avgAlgorithmConvScore` -> the average score for the conversations (transferred and non-transferred), the scores are provided by an algorithm
@@ -4274,7 +4273,6 @@ components:
           * `avgAlgorithmConvScoreOverTime` -> average score for the answers (transferred and transferred) on each time interval, the scores are provided by an algorithm
       example: totalConversations
       enum:
-        - totalConversations
         - avgFeedbackConvScore
         - avgFeedbackAnswerScore
         - avgAlgorithmConvScore
@@ -4312,19 +4310,11 @@ components:
           * `q` -> quarters, multiple not supported, supported value 1q
           * `y` -> years, multiple not supported, supported value 1y
       example: 1M
-      enum:
-        - ms
-        - m
-        - h
-        - d
-        - w
-        - M
-        - q
-        - y
     QAAggregatedAnalytics:
       type: object
       requested:
         - totalDocuments
+        - totalConversations
       properties:
         totalDocuments:
           type: number
