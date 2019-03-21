@@ -7,10 +7,27 @@ curl -v -H "Authorization: Basic $(echo -n 'admin:adminp4ssw0rd' | base64)" \
  -X POST -H "Content-Type: application/json" -X POST "http://localhost:${PORT}/${INDEX_NAME}/analytics/${ROUTE}" -d "
 {
   \"interval\": \"1M\",
-  \"aggregations\": [\"avgFeedbackConvScore\", \"avgFeedbackAnswerScore\", \"avgAlgorithmConvScore\", 
-			\"avgAlgorithmAnswerScore\", \"scoreHistogram\", \"scoreHistogramNotTransferred\",
-			\"scoreHistogramTransferred\", \"conversationsHistogram\"
-		]
+  \"aggregations\": [
+    \"avgFeedbackConvScore\",
+    \"avgFeedbackAnswerScore\",
+    \"avgAlgorithmConvScore\",
+	\"avgAlgorithmAnswerScore\",
+	\"scoreHistogram\",
+	\"scoreHistogramNotTransferred\",
+	\"scoreHistogramTransferred\",
+	\"conversationsHistogram\",
+    \"conversationsNotTransferredHistogram\",
+    \"conversationsTransferredHistogram\",
+    \"avgFeedbackNotTransferredConvScoreOverTime\",
+    \"avgFeedbackTransferredConvScoreOverTime\",
+    \"avgAlgorithmNotTransferredConvScoreOverTime\"
+  ]
 }
 "
 
+#
+#    \"avgAlgorithmTransferredConvScoreOverTime\",
+#    \"avgFeedbackConvScoreOverTime\",
+#    \"avgAlgorithmAnswerScoreOverTime\",
+#    \"avgFeedbackAnswerScoreOverTime\",
+#    \"avgAlgorithmConvScoreOverTime\"

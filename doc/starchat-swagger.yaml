@@ -4184,7 +4184,6 @@ components:
         without a document containing the transferred value are assumed completed entirely by StarChat.
         Values:
           * `TRANSFERRED` -> can be returned to the user as response
-          * `NOTTRANSFERRED` -> the conversation was not transferred
           * `UNSPECIFIED` -> usually in the middle of a conversation this value is not set, it is known at the end of the conversation or when the user requests to escalate
       example: TRANSFERRED
       enum:

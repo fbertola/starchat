@@ -29,7 +29,6 @@ object Agent extends Enumeration {
 
 object Escalated extends Enumeration {
   val TRANSFERRED,  /** when the conversation is being transferred to the customer care */
-  NOTTRANSFERRED,
   UNSPECIFIED = Escalated.Value /** usually in the middle of a conversation this value is not set,
               it is known at the end of the conversation or when the user requests to escalate.*/
   def value(v: String) = values.find(_.toString === v).getOrElse(UNSPECIFIED)
@@ -73,7 +72,7 @@ case class QADocumentAnnotations(
                                   doctype: Option[Doctypes.Value] = Some(Doctypes.NORMAL), /* document type */
                                   state: Option[String] = None, /* eventual link to any of the state machine states */
                                   agent: Option[Agent.Value] = Some(Agent.STARCHAT),
-                                  escalated: Option[Escalated.Value] = None,
+                                  escalated: Option[Escalated.Value] = Some(Escalated.UNSPECIFIED),
                                   answered: Option[Answered.Value] = Some(Answered.ANSWERED),
                                   triggered: Option[Triggered.Value] = Some(Triggered.UNSPECIFIED),
                                   followup: Option[Followup.Value] = Some(Followup.UNSPECIFIED),

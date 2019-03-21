@@ -6,7 +6,7 @@ curl -v -H "Authorization: Basic $(echo -n 'test_user:p4ssw0rd' | base64)" \
   -H "Content-Type: application/json" -X POST http://localhost:${PORT}/${INDEX_NAME}/knowledgebase -d '{
 	"id": "1",
 	"conversation": "id:1000",
-	"indexInConversation": 1,
+	"indexInConversation": 2,
 	"question": "how are you?",
         "questionNegative": ["are you kidding me?"],
 	"answer": "fine thanks",

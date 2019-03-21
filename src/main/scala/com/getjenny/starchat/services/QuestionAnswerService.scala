@@ -24,11 +24,13 @@ import org.elasticsearch.index.query.functionscore._
 import org.elasticsearch.index.query.{BoolQueryBuilder, InnerHitBuilder, QueryBuilder, QueryBuilders}
 import org.elasticsearch.rest.RestStatus
 import org.elasticsearch.script._
-import org.elasticsearch.search.aggregations.AggregationBuilders
+import org.elasticsearch.search.aggregations.{AggregationBuilders, AggregatorFactories, pipeline}
 import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder
 import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 import org.elasticsearch.search.aggregations.metrics.sum.Sum
+import org.elasticsearch.search.aggregations.pipeline.PipelineAggregatorBuilders
+import org.elasticsearch.search.aggregations.pipeline.bucketmetrics.avg.AvgBucketPipelineAggregationBuilder
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.sort.{FieldSortBuilder, ScoreSortBuilder, SortOrder}
 import org.joda.time.DateTimeZone
@@ -786,6 +788,7 @@ trait QuestionAnswerService extends AbstractDataService {
 
   def analytics(indexName: String, request: QAAggregatedAnalyticsRequest): QAAggregatedAnalytics = {
     val client: RestHighLevelClient = elasticClient.httpClient
+    val firstIndexInConv: Long = 1
 
     val sourceReq: SearchSourceBuilder = new SearchSourceBuilder()
       .size(0)
@@ -856,21 +859,18 @@ trait QuestionAnswerService extends AbstractDataService {
         }
         if (reqAggs.contains(QAAggregationsTypes.scoreHistogram)) {
           sourceReq.aggregation(
-            AggregationBuilders.filter("scoreHistogram",
-              QueryBuilders.boolQuery()
-                .should(QueryBuilders.termQuery("escalated", Escalated.NOTTRANSFERRED.toString))
-                .should(QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString))
-            ).subAggregation(
-              AggregationBuilders
-                .histogram("scoreHistogram").field("feedbackConvScore")
-                .interval(1.0d).minDocCount(minDocInBuckets)
-            )
+            AggregationBuilders
+              .histogram("scoreHistogram").field("feedbackConvScore")
+              .interval(1.0d).minDocCount(minDocInBuckets)
           )
         }
         if (reqAggs.contains(QAAggregationsTypes.scoreHistogramNotTransferred)) {
           sourceReq.aggregation(
             AggregationBuilders.filter("scoreHistogramNonTransferred",
-              QueryBuilders.termQuery("escalated", Escalated.NOTTRANSFERRED.toString)).subAggregation(
+              QueryBuilders.boolQuery().mustNot(
+                QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString)
+              )
+            ).subAggregation(
               AggregationBuilders
                 .histogram("scoreHistogramNonTransferred").field("feedbackConvScore")
                 .interval(1.0d).minDocCount(minDocInBuckets)
@@ -880,7 +880,9 @@ trait QuestionAnswerService extends AbstractDataService {
         if (reqAggs.contains(QAAggregationsTypes.scoreHistogramTransferred)) {
           sourceReq.aggregation(
             AggregationBuilders.filter("scoreHistogramTransferred",
-              QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString)).subAggregation(
+              QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString))
+            ).subAggregation(
               AggregationBuilders
                 .histogram("scoreHistogramTransferred").field("feedbackConvScore")
                 .interval(1.0d).minDocCount(minDocInBuckets)
@@ -890,7 +892,7 @@ trait QuestionAnswerService extends AbstractDataService {
         if (reqAggs.contains(QAAggregationsTypes.conversationsHistogram)) {
           sourceReq.aggregation(
             AggregationBuilders.filter("conversationsHistogram",
-              QueryBuilders.termQuery("index_in_conversation", 0)).subAggregation(
+              QueryBuilders.termQuery("index_in_conversation", firstIndexInConv)).subAggregation(
               AggregationBuilders
                 .dateHistogram("conversationsHistogram").field("timestamp")
                 .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
@@ -898,29 +900,141 @@ trait QuestionAnswerService extends AbstractDataService {
             )
           )
         }
-        if (reqAggs.contains(QAAggregationsTypes.conversationsHistogram)) {
+        if (reqAggs.contains(QAAggregationsTypes.conversationsNotTransferredHistogram)) {
           sourceReq.aggregation(
             AggregationBuilders.filter("conversationsNotTransferredHistogram",
-              QueryBuilders.termQuery("index_in_conversation", 0)).subAggregation(
+              QueryBuilders.boolQuery()
+                .mustNot(QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString))
+                .must(QueryBuilders.termQuery("index_in_conversation", firstIndexInConv)))
+              .subAggregation(
+                AggregationBuilders
+                  .dateHistogram("conversationsNotTransferredHistogram").field("timestamp")
+                  .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
+                  .timeZone(dateHistTimezone).format("yyyy-MM-dd : HH:mm:ss")
+              )
+          )
+        }
+        if (reqAggs.contains(QAAggregationsTypes.conversationsTransferredHistogram)) {
+          sourceReq.aggregation(
+            AggregationBuilders.filter("conversationsTransferredHistogram",
+              QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString))
+                .must(QueryBuilders.termQuery("index_in_conversation", firstIndexInConv)))
+              .subAggregation(
+                AggregationBuilders
+                  .dateHistogram("conversationsTransferredHistogram").field("timestamp")
+                  .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
+                  .timeZone(dateHistTimezone).format("yyyy-MM-dd : HH:mm:ss")
+              )
+          )
+        }
+        if (reqAggs.contains(QAAggregationsTypes.avgFeedbackNotTransferredConvScoreOverTime)) {
+          sourceReq.aggregation(
+            AggregationBuilders.filter("avgFeedbackNotTransferredConvScoreOverTime",
+              QueryBuilders.boolQuery()
+                .mustNot(QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString))
+            ).subAggregation(
               AggregationBuilders
-                .dateHistogram("conversationsNotTransferredHistogram").field("timestamp")
+                .dateHistogram("avgFeedbackNotTransferredConvScoreOverTime").field("timestamp")
                 .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
                 .timeZone(dateHistTimezone).format("yyyy-MM-dd : HH:mm:ss")
+                .subAggregation(AggregationBuilders.avg("avgScore").field("feedbackConvScore"))
             )
+          )
+        }
+        if (reqAggs.contains(QAAggregationsTypes.avgFeedbackTransferredConvScoreOverTime)) {
+          sourceReq.aggregation(
+            AggregationBuilders.filter("avgFeedbackTransferredConvScoreOverTime",
+              QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString))
+            ).subAggregation(
+              AggregationBuilders
+                .dateHistogram("avgFeedbackTransferredConvScoreOverTime").field("timestamp")
+                .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
+                .timeZone(dateHistTimezone).format("yyyy-MM-dd : HH:mm:ss")
+                .subAggregation(AggregationBuilders.avg("avgScore").field("feedbackConvScore"))
+            )
+          )
+        }
+        if (reqAggs.contains(QAAggregationsTypes.avgAlgorithmNotTransferredConvScoreOverTime)) {
+          sourceReq.aggregation(
+            AggregationBuilders.filter("avgAlgorithmNotTransferredConvScoreOverTime",
+              QueryBuilders.boolQuery()
+                .mustNot(QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString))
+            ).subAggregation(
+              AggregationBuilders
+                .dateHistogram("avgAlgorithmNotTransferredConvScoreOverTime").field("timestamp")
+                .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
+                .timeZone(dateHistTimezone).format("yyyy-MM-dd : HH:mm:ss")
+                .subAggregation(AggregationBuilders.avg("avgScore").field("algorithmConvScore"))
+            )
+          )
+        }
+        if (reqAggs.contains(QAAggregationsTypes.avgAlgorithmTransferredConvScoreOverTime)) {
+          sourceReq.aggregation(
+            AggregationBuilders.filter("avgAlgorithmTransferredConvScoreOverTime",
+              QueryBuilders.boolQuery()
+                .must(QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString))
+            ).subAggregation(
+              AggregationBuilders
+                .dateHistogram("avgAlgorithmTransferredConvScoreOverTime").field("timestamp")
+                .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
+                .timeZone(dateHistTimezone).format("yyyy-MM-dd : HH:mm:ss")
+                .subAggregation(AggregationBuilders.avg("avgScore").field("algorithmConvScore"))
+            )
+          )
+        }
+        if (reqAggs.contains(QAAggregationsTypes.avgFeedbackConvScoreOverTime)) {
+          sourceReq.aggregation(
+            AggregationBuilders
+              .dateHistogram("avgFeedbackConvScoreOverTime").field("timestamp")
+              .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
+              .timeZone(dateHistTimezone).format("yyyy-MM-dd : HH:mm:ss")
+              .subAggregation(AggregationBuilders.avg("avgScore").field("feedbackConvScore"))
+          )
+        }
+        if (reqAggs.contains(QAAggregationsTypes.avgAlgorithmAnswerScoreOverTime)) {
+          sourceReq.aggregation(
+            AggregationBuilders
+              .dateHistogram("avgAlgorithmAnswerScoreOverTime").field("timestamp")
+              .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
+              .timeZone(dateHistTimezone).format("yyyy-MM-dd : HH:mm:ss")
+              .subAggregation(AggregationBuilders.avg("avgScore").field("algorithmAnswerScore"))
+          )
+        }
+        if (reqAggs.contains(QAAggregationsTypes.avgFeedbackAnswerScoreOverTime)) {
+          sourceReq.aggregation(
+            AggregationBuilders
+              .dateHistogram("avgFeedbackAnswerScoreOverTime").field("timestamp")
+              .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
+              .timeZone(dateHistTimezone).format("yyyy-MM-dd : HH:mm:ss")
+              .subAggregation(AggregationBuilders.avg("avgScore").field("feedbackAnswerScore"))
+          )
+        }
+        if (reqAggs.contains(QAAggregationsTypes.avgAlgorithmConvScoreOverTime)) {
+          sourceReq.aggregation(
+            AggregationBuilders
+              .dateHistogram("avgAlgorithmConvScoreOverTime").field("timestamp")
+              .dateHistogramInterval(dateHistInterval).minDocCount(minDocInBuckets)
+              .timeZone(dateHistTimezone).format("yyyy-MM-dd : HH:mm:ss")
+              .subAggregation(AggregationBuilders.avg("avgScore").field("algorithmConvScore"))
           )
         }
       case _ => List.empty[QAAggregationsTypes.Value]
     }
 
+    println("SReq: ", searchReq.toString)
+    println("SourceReq: ", sourceReq.toString)
+
     val searchResp: SearchResponse = client.search(searchReq, RequestOptions.DEFAULT)
 
-    val totalDocuments = searchResp.getHits.totalHits
+    val totalDocuments = searchResp.getAggregations.get("totalDocuments")
 
     val totalConversations: Cardinality = searchResp.getAggregations.get("totalConversations")
 
     val res = QAAggregatedAnalytics(totalDocuments = totalDocuments,
       totalConversations = totalConversations.getValue)
-    println("SR: ", res, searchResp)
+    println("SRes: ", res, searchResp)
     res
   }
 
