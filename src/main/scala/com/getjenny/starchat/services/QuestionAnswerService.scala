@@ -11,8 +11,9 @@ import com.getjenny.starchat.entities._
 import com.getjenny.starchat.services.esclient.QuestionAnswerElasticClient
 import com.getjenny.starchat.utils.Index
 import org.apache.lucene.search.join._
+import org.joda.time.DateTime
 import org.elasticsearch.action.bulk.BulkRequest
-import org.elasticsearch.action.get.{GetResponse, MultiGetItemResponse, MultiGetRequest, MultiGetResponse}
+import org.elasticsearch.action.get.{GetResponse, MultiGetItemResponse, MultiGetRequest}
 import org.elasticsearch.action.index.{IndexRequest, IndexResponse}
 import org.elasticsearch.action.search.{SearchRequest, SearchResponse, SearchType}
 import org.elasticsearch.action.update.UpdateRequest
@@ -24,13 +25,12 @@ import org.elasticsearch.index.query.functionscore._
 import org.elasticsearch.index.query.{BoolQueryBuilder, InnerHitBuilder, QueryBuilder, QueryBuilders}
 import org.elasticsearch.rest.RestStatus
 import org.elasticsearch.script._
-import org.elasticsearch.search.aggregations.{AggregationBuilders, AggregatorFactories, pipeline}
-import org.elasticsearch.search.aggregations.bucket.filter.FilterAggregationBuilder
-import org.elasticsearch.search.aggregations.bucket.histogram.DateHistogramInterval
+import org.elasticsearch.search.aggregations.AggregationBuilders
+import org.elasticsearch.search.aggregations.bucket.filter.ParsedFilter
+import org.elasticsearch.search.aggregations.metrics.avg.Avg
+import org.elasticsearch.search.aggregations.bucket.histogram.{DateHistogramInterval, Histogram, ParsedDateHistogram}
 import org.elasticsearch.search.aggregations.metrics.cardinality.Cardinality
 import org.elasticsearch.search.aggregations.metrics.sum.Sum
-import org.elasticsearch.search.aggregations.pipeline.PipelineAggregatorBuilders
-import org.elasticsearch.search.aggregations.pipeline.bucketmetrics.avg.AvgBucketPipelineAggregationBuilder
 import org.elasticsearch.search.builder.SearchSourceBuilder
 import org.elasticsearch.search.sort.{FieldSortBuilder, ScoreSortBuilder, SortOrder}
 import org.joda.time.DateTimeZone
@@ -40,7 +40,6 @@ import scala.collection.JavaConverters._
 import scala.collection.immutable.{List, Map}
 import scala.collection.mutable
 import scala.concurrent.Future
-import scala.util.matching.Regex
 
 case class QuestionAnswerServiceException(message: String = "", cause: Throwable = None.orNull)
   extends Exception(message, cause)
@@ -866,13 +865,13 @@ trait QuestionAnswerService extends AbstractDataService {
         }
         if (reqAggs.contains(QAAggregationsTypes.scoreHistogramNotTransferred)) {
           sourceReq.aggregation(
-            AggregationBuilders.filter("scoreHistogramNonTransferred",
+            AggregationBuilders.filter("scoreHistogramNotTransferred",
               QueryBuilders.boolQuery().mustNot(
                 QueryBuilders.termQuery("escalated", Escalated.TRANSFERRED.toString)
               )
             ).subAggregation(
               AggregationBuilders
-                .histogram("scoreHistogramNonTransferred").field("feedbackConvScore")
+                .histogram("scoreHistogramNotTransferred").field("feedbackConvScore")
                 .interval(1.0d).minDocCount(minDocInBuckets)
             )
           )
@@ -1023,18 +1022,260 @@ trait QuestionAnswerService extends AbstractDataService {
       case _ => List.empty[QAAggregationsTypes.Value]
     }
 
-    println("SReq: ", searchReq.toString)
-    println("SourceReq: ", sourceReq.toString)
-
     val searchResp: SearchResponse = client.search(searchReq, RequestOptions.DEFAULT)
 
-    val totalDocuments = searchResp.getAggregations.get("totalDocuments")
+    val totalDocuments: Cardinality = searchResp.getAggregations.get("totalDocuments")
 
     val totalConversations: Cardinality = searchResp.getAggregations.get("totalConversations")
 
-    val res = QAAggregatedAnalytics(totalDocuments = totalDocuments,
-      totalConversations = totalConversations.getValue)
-    println("SRes: ", res, searchResp)
+    val res = request.aggregations match {
+      case Some(aggregationsReq) =>
+        val reqAggs = aggregationsReq.toSet
+        val avgFeedbackConvScore: Option[Double] = if (reqAggs.contains(QAAggregationsTypes.avgFeedbackConvScore)) {
+          val avg: Avg = searchResp.getAggregations.get("avgFeedbackConvScore")
+          Some(avg.getValue)
+        } else None
+        val avgFeedbackAnswerScore: Option[Double] = if (reqAggs.contains(QAAggregationsTypes.avgFeedbackAnswerScore)) {
+          val avg: Avg = searchResp.getAggregations.get("avgFeedbackAnswerScore")
+          Some(avg.getValue)
+        } else None
+        val avgAlgorithmConvScore: Option[Double] = if (reqAggs.contains(QAAggregationsTypes.avgAlgorithmConvScore)) {
+          val avg: Avg = searchResp.getAggregations.get("avgAlgorithmConvScore")
+          Some(avg.getValue)
+        } else None
+        val avgAlgorithmAnswerScore: Option[Double] = if (reqAggs.contains(QAAggregationsTypes.avgAlgorithmAnswerScore)) {
+          val avg: Avg = searchResp.getAggregations.get("avgAlgorithmAnswerScore")
+          Some(avg.getValue)
+        } else None
+        val scoreHistogram: Option[List[ScoreHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.scoreHistogram)) {
+          val h: Histogram = searchResp.getAggregations.get("scoreHistogram")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              ScoreHistogramItem(
+                key = bucket.getKeyAsString,
+                docCount = bucket.getDocCount
+              )
+            }.toList
+          }
+        } else None
+        val scoreHistogramNotTransferred: Option[List[ScoreHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.scoreHistogramNotTransferred)) {
+          val pf: ParsedFilter = searchResp.getAggregations.get("scoreHistogramNotTransferred")
+          val h: Histogram = pf.getAggregations.get("scoreHistogramNotTransferred")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              ScoreHistogramItem(
+                key = bucket.getKeyAsString,
+                docCount = bucket.getDocCount
+              )
+            }.toList
+          }
+        } else None
+        val scoreHistogramTransferred: Option[List[ScoreHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.scoreHistogramTransferred)) {
+          val pf: ParsedFilter = searchResp.getAggregations.get("scoreHistogramTransferred")
+          val h: Histogram = pf.getAggregations.get("scoreHistogramTransferred")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              ScoreHistogramItem(
+                key = bucket.getKeyAsString,
+                docCount = bucket.getDocCount
+              )
+            }.toList
+          }
+        } else None
+        val conversationsHistogram: Option[List[ConversationsHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.conversationsHistogram)) {
+          val pf: ParsedFilter = searchResp.getAggregations.get("conversationsHistogram")
+          val h: ParsedDateHistogram = pf.getAggregations.get("conversationsHistogram")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              ConversationsHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount
+              )
+            }.toList
+          }
+        } else None
+        val conversationsNotTransferredHistogram: Option[List[ConversationsHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.conversationsNotTransferredHistogram)) {
+          val pf: ParsedFilter = searchResp.getAggregations.get("conversationsNotTransferredHistogram")
+          val h: ParsedDateHistogram = pf.getAggregations.get("conversationsNotTransferredHistogram")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              ConversationsHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount
+              )
+            }.toList
+          }
+        } else None
+        val conversationsTransferredHistogram: Option[List[ConversationsHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.conversationsTransferredHistogram)) {
+          val pf: ParsedFilter = searchResp.getAggregations.get("conversationsTransferredHistogram")
+          val h: ParsedDateHistogram = pf.getAggregations.get("conversationsTransferredHistogram")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              ConversationsHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount
+              )
+            }.toList
+          }
+        } else None
+        val avgFeedbackNotTransferredConvScoreOverTime: Option[List[AvgScoresHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.avgFeedbackNotTransferredConvScoreOverTime)) {
+          val pf: ParsedFilter = searchResp.getAggregations.get("avgFeedbackNotTransferredConvScoreOverTime")
+          val h: ParsedDateHistogram = pf.getAggregations.get("avgFeedbackNotTransferredConvScoreOverTime")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              val avg: Avg = bucket.getAggregations.get("avgScore")
+              AvgScoresHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount,
+                avgScore = avg.getValue
+              )
+            }.toList
+          }
+        } else None
+        val avgFeedbackTransferredConvScoreOverTime: Option[List[AvgScoresHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.avgFeedbackTransferredConvScoreOverTime)) {
+          val pf: ParsedFilter = searchResp.getAggregations.get("avgFeedbackTransferredConvScoreOverTime")
+          val h: ParsedDateHistogram = pf.getAggregations.get("avgFeedbackTransferredConvScoreOverTime")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              val avg: Avg = bucket.getAggregations.get("avgScore")
+              AvgScoresHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount,
+                avgScore = avg.getValue
+              )
+            }.toList
+          }
+        } else None
+        val avgAlgorithmNotTransferredConvScoreOverTime: Option[List[AvgScoresHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.avgAlgorithmNotTransferredConvScoreOverTime)) {
+          val pf: ParsedFilter = searchResp.getAggregations.get("avgAlgorithmNotTransferredConvScoreOverTime")
+          val h: ParsedDateHistogram = pf.getAggregations.get("avgAlgorithmNotTransferredConvScoreOverTime")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              val avg: Avg = bucket.getAggregations.get("avgScore")
+              AvgScoresHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount,
+                avgScore = avg.getValue
+              )
+            }.toList
+          }
+        } else None
+        val avgAlgorithmTransferredConvScoreOverTime: Option[List[AvgScoresHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.avgAlgorithmTransferredConvScoreOverTime)) {
+          val pf: ParsedFilter = searchResp.getAggregations.get("avgAlgorithmTransferredConvScoreOverTime")
+          val h: ParsedDateHistogram = pf.getAggregations.get("avgAlgorithmTransferredConvScoreOverTime")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              val avg: Avg = bucket.getAggregations.get("avgScore")
+              AvgScoresHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount,
+                avgScore = avg.getValue
+              )
+            }.toList
+          }
+        } else None
+        val avgFeedbackConvScoreOverTime: Option[List[AvgScoresHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.avgFeedbackConvScoreOverTime)) {
+          val h: ParsedDateHistogram = searchResp.getAggregations.get("avgFeedbackConvScoreOverTime")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              val avg: Avg = bucket.getAggregations.get("avgScore")
+              AvgScoresHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount,
+                avgScore = avg.getValue
+              )
+            }.toList
+          }
+        } else None
+        val avgAlgorithmAnswerScoreOverTime: Option[List[AvgScoresHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.avgAlgorithmAnswerScoreOverTime)) {
+          val h: ParsedDateHistogram = searchResp.getAggregations.get("avgAlgorithmAnswerScoreOverTime")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              val avg: Avg = bucket.getAggregations.get("avgScore")
+              AvgScoresHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount,
+                avgScore = avg.getValue
+              )
+            }.toList
+          }
+        } else None
+        val avgFeedbackAnswerScoreOverTime: Option[List[AvgScoresHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.avgFeedbackAnswerScoreOverTime)) {
+          val h: ParsedDateHistogram = searchResp.getAggregations.get("avgFeedbackAnswerScoreOverTime")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              val avg: Avg = bucket.getAggregations.get("avgScore")
+              AvgScoresHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount,
+                avgScore = avg.getValue
+              )
+            }.toList
+          }
+        } else None
+        val avgAlgorithmConvScoreOverTime: Option[List[AvgScoresHistogramItem]] = if (reqAggs.contains(QAAggregationsTypes.avgAlgorithmConvScoreOverTime)) {
+          val h: ParsedDateHistogram = searchResp.getAggregations.get("avgAlgorithmConvScoreOverTime")
+          Some {
+            h.getBuckets.asScala.map { bucket =>
+              val avg: Avg = bucket.getAggregations.get("avgScore")
+              AvgScoresHistogramItem(
+                key = bucket.getKey.asInstanceOf[DateTime].getMillis,
+                keyAsString = bucket.getKeyAsString,
+                docCount = bucket.getDocCount,
+                avgScore = avg.getValue
+              )
+            }.toList
+          }
+        } else None
+
+        val scoreHistograms: Map[String, List[ScoreHistogramItem]] = Map(
+          "scoreHistogram" -> scoreHistogram,
+          "scoreHistogramNotTransferred" -> scoreHistogramNotTransferred,
+          "scoreHistogramTransferred" -> scoreHistogramTransferred
+        ).filter{case (_, v) => v.nonEmpty}.map{case(k, v) => (k, v.get)}
+
+        val conversationsHistograms: Map[String, List[ConversationsHistogramItem]] = Map(
+          "conversationsHistogram" -> conversationsHistogram,
+          "conversationsNotTransferredHistogram" -> conversationsNotTransferredHistogram,
+          "conversationsTransferredHistogram" -> conversationsTransferredHistogram
+        ).filter{case (_, v) => v.nonEmpty}.map{case(k, v) => (k, v.get)}
+
+        val scoresOverTime: Map[String, List[AvgScoresHistogramItem]] = Map(
+          "avgFeedbackNotTransferredConvScoreOverTime" -> avgFeedbackNotTransferredConvScoreOverTime,
+          "avgFeedbackTransferredConvScoreOverTime" -> avgFeedbackTransferredConvScoreOverTime,
+          "avgAlgorithmNotTransferredConvScoreOverTime" -> avgAlgorithmNotTransferredConvScoreOverTime,
+          "avgAlgorithmTransferredConvScoreOverTime" -> avgAlgorithmTransferredConvScoreOverTime,
+          "avgFeedbackConvScoreOverTime" -> avgFeedbackConvScoreOverTime,
+          "avgAlgorithmAnswerScoreOverTime" -> avgAlgorithmAnswerScoreOverTime,
+          "avgFeedbackAnswerScoreOverTime" -> avgFeedbackAnswerScoreOverTime,
+          "avgAlgorithmConvScoreOverTime" -> avgAlgorithmConvScoreOverTime
+        ).filter{case (_, v) => v.nonEmpty}.map{case(k, v) => (k, v.get)}
+
+        QAAggregatedAnalytics(totalDocuments = totalDocuments.getValue,
+          totalConversations = totalConversations.getValue,
+          avgFeedbackConvScore = avgFeedbackConvScore,
+          avgFeedbackAnswerScore = avgFeedbackAnswerScore,
+          avgAlgorithmConvScore = avgAlgorithmConvScore,
+          avgAlgorithmAnswerScore = avgAlgorithmAnswerScore,
+          scoreHistograms = if(scoreHistograms.nonEmpty) Some(scoreHistograms) else None,
+          conversationsHistograms = if(conversationsHistograms.nonEmpty) Some(conversationsHistograms) else None,
+          scoresOverTime = if(scoresOverTime.nonEmpty) Some(scoresOverTime) else None
+        )
+      case _ =>
+        QAAggregatedAnalytics(totalDocuments = totalDocuments.getValue,
+          totalConversations = totalConversations.getValue)
+    }
+
     res
   }
 
@@ -1394,7 +1635,7 @@ trait QuestionAnswerService extends AbstractDataService {
 
     val maxScore : Float = .0f
     val total : Int = filteredDoc.length
-    val searchResults : SearchQADocumentsResults = SearchQADocumentsResults(hitsCount = total, maxScore = maxScore,
+    val searchResults : SearchQADocumentsResults = SearchQADocumentsResults(totalHits = total, hitsCount = total, maxScore = maxScore,
       hits = filteredDoc)
 
     val searchResultsOption : Option[SearchQADocumentsResults] = Option { searchResults }

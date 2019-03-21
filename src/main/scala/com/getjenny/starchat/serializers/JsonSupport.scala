@@ -61,9 +61,9 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   }
 
   implicit val qaAggregatedAnalyticsRequestFormat = jsonFormat6(QAAggregatedAnalyticsRequest)
-  implicit val scoreHistogramFormat = jsonFormat2(ScoreHistogram)
-  implicit val conversationsHistogramFormat = jsonFormat3(ConversationsHistogram)
-  implicit val scoresOverTimeFormat = jsonFormat4(ScoresOverTime)
+  implicit val scoreHistogramFormat = jsonFormat2(ScoreHistogramItem)
+  implicit val conversationsHistogramFormat = jsonFormat3(ConversationsHistogramItem)
+  implicit val scoresOverTimeFormat = jsonFormat4(AvgScoresHistogramItem)
   implicit val qaAggregatedAnalyticsFormat = jsonFormat9(QAAggregatedAnalytics)
 
   ////////////////////////////

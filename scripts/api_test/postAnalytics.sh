@@ -20,14 +20,13 @@ curl -v -H "Authorization: Basic $(echo -n 'admin:adminp4ssw0rd' | base64)" \
     \"conversationsTransferredHistogram\",
     \"avgFeedbackNotTransferredConvScoreOverTime\",
     \"avgFeedbackTransferredConvScoreOverTime\",
-    \"avgAlgorithmNotTransferredConvScoreOverTime\"
+    \"avgAlgorithmNotTransferredConvScoreOverTime\",
+    \"avgAlgorithmTransferredConvScoreOverTime\",
+    \"avgFeedbackConvScoreOverTime\",
+    \"avgAlgorithmAnswerScoreOverTime\",
+    \"avgFeedbackAnswerScoreOverTime\",
+    \"avgAlgorithmConvScoreOverTime\"
   ]
 }
 "
 
-#
-#    \"avgAlgorithmTransferredConvScoreOverTime\",
-#    \"avgFeedbackConvScoreOverTime\",
-#    \"avgAlgorithmAnswerScoreOverTime\",
-#    \"avgFeedbackAnswerScoreOverTime\",
-#    \"avgAlgorithmConvScoreOverTime\"
