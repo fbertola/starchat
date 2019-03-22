@@ -1532,7 +1532,7 @@ trait QuestionAnswerService extends AbstractDataService {
           case Some(t) => builder.field("dclass", t)
           case _ => ;
         }
-        builder.field("doctype", annotations.doctype)
+        builder.field("doctype", annotations.doctype.toString)
         annotations.state match {
           case Some(t) =>
             builder.field("state", t)
@@ -1563,7 +1563,10 @@ trait QuestionAnswerService extends AbstractDataService {
           case Some(t) => builder.field("algorithmAnswerScore", t)
           case _ => ;
         }
-        builder.field("start", annotations.start)
+        annotations.start match {
+          case Some(t) => builder.field("start", t)
+          case _ => ;
+        }
       case _ => ;
     }
     // end annotations
