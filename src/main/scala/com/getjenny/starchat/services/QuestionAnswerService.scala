@@ -536,9 +536,9 @@ trait QuestionAnswerService extends AbstractDataService {
 
     documentSearch.conversation match {
       case Some(convIds) =>
-        boolQueryBuilder.must(
-          QueryBuilders.termsQuery("conversation", convIds:_*)
-        ).minimumShouldMatch(1)
+        val convIdBoolQ = QueryBuilders.boolQuery()
+        convIds.foreach { cId => convIdBoolQ.should(QueryBuilders.termQuery("conversation", cId)) }
+        boolQueryBuilder.must(convIdBoolQ)
       case _ => ;
     }
 
