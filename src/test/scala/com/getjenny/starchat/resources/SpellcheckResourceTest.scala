@@ -69,6 +69,7 @@ class SpellcheckResourceTest extends WordSpec with Matchers with ScalatestRouteT
       val knowledgeBaseRequest: QADocument = QADocument(
         id = "0",
         conversation = "id:1000",
+        indexInConversation = 1,
         coreData = Some(QADocumentCore(
           question = Some("is this text mispelled?"),
           answer = Some("it might be")
