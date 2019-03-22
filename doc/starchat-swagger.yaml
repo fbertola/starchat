@@ -4306,6 +4306,72 @@ components:
           * `q` -> quarters, multiple not supported, supported value 1q
           * `y` -> years, multiple not supported, supported value 1y
       example: 1M
+    ConversationsHistogramItem:
+      type: object
+      requested:
+        - key
+        - keyAsString
+        - docCount
+      properties:
+        key:
+          type: number
+          format: long
+          description: a timestamp in milliseconds (bucket)
+          example: 1550534500000
+        keyAsString:
+          type: string
+          description: >-
+            string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
+          example: "2019-02-19 : 01:00:00"
+        docCount:
+          type: number
+          format: long
+          description: how many conversations falls in the bucket
+          example: 113
+    AvgScoresHistogramItem:
+      type: object
+      requested:
+        - key
+        - keyAsString
+        - docCount
+        - avgScore
+      properties:
+        key:
+          type: number
+          format: long
+          description: a timestamp in milliseconds (bucket)
+          example: 1550584800000
+        keyAsString:
+          type: string
+          description: >-
+            string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
+          example: "2019-02-19 : 14:00:00"
+        docCount:
+          type: number
+          format: long
+          description: how many conversations falls in the bucket
+          example: 7
+        avgScore:
+          type: number
+          format: double
+          description: the average score in bucket
+          example: 12.0
+    ScoreHistogramItem:
+      type: object
+      requested:
+        - key
+        - docCount
+      properties:
+        key:
+          type: number
+          format: double
+          description: a score value (bucket)
+          example: 0.0
+        docCount:
+          type: number
+          format: long
+          description: how many score falls in the bucket
+          example: 13214
     QAAggregatedAnalytics:
       type: object
       requested:
@@ -4342,353 +4408,36 @@ components:
           description: the average answers score (algorithms score)
           format: double
           example: 3.7
-        scoreHistogram:
-          type: array
-          description: >-
-            the distribution of scores, an histogram (transferred and non-transferred)
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: double
-                description: a score value (bucket)
-              docCount:
-                type: number
-                format: long
-                description: how many score falls in the bucket
-            example: [{"key": 0.0, "docCount": 13213}, {"key": 1.0, "docCount": 213}, {"key": 4.0, "docCount": 1013}]
-        scoreHistogramNotTransferred:
-          type: array
-          description: >-
-            the distribution of scores for the non-transferred conversations, an histogram
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: double
-                description: a score value (bucket)
-              docCount:
-                type: number
-                format: long
-                description: how many score falls in the bucket
-            example: [{"key": 0.0, "docCount": 13213}, {"key": 1.0, "docCount": 213}, {"key": 4.0, "docCount": 1013}]
-        scoreHistogramTransferred:
-          type: array
-          description: >-
-            the distribution of scores for the transferred conversations, an histogram
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: double
-                description: a score value (bucket)
-              docCount:
-                type: number
-                format: long
-                description: how many score falls in the bucket
-            example: [{"key": 0.0, "docCount": 13213}, {"key": 1.0, "docCount": 213}, {"key": 4.0, "docCount": 1013}]
-        conversationsHistogram:
-          type: array
-          description: >-
-            time range histogram of the number of conversations on a time range (transferred and non-transferred)
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-          example: [{"key": 1550534400000, "keyAsString": "2019-02-19 : 00:00:00", "docCount": 1213},
-             {"key": 1550534500000, "keyAsString": "2019-02-19 : 01:00:00", "docCount": 113},
-             {"key": 1550534600000, "keyAsString": "2019-02-19 : 02:00:00", "docCount": 1},
-             {"key": 1550534700000, "keyAsString": "2019-02-19 : 03:00:00", "docCount": 5331}]
-        conversationsNotTransferredHistogram:
-          type: array
-          description: >-
-            time range histogram of the number of conversations on a time range (non-transferred only)
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-          example: [{"key": 1550534400000, "keyAsString": "2019-02-19 : 00:00:00", "docCount": 213},
-             {"key": 1550534500000, "keyAsString": "2019-02-19 : 01:00:00", "docCount": 4113},
-             {"key": 1550534600000, "keyAsString": "2019-02-19 : 02:00:00", "docCount": 51},
-             {"key": 1550534700000, "keyAsString": "2019-02-19 : 03:00:00", "docCount": 331}]
-        conversationsTransferredHistogram:
-          type: array
-          description: >-
-            time range histogram of the number of conversations on a time range (transferred only)
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-          example: [{"key": 1550534400000, "keyAsString": "2019-02-19 : 00:00:00", "docCount": 3},
-             {"key": 1550534500000, "keyAsString": "2019-02-19 : 01:00:00", "docCount": 43},
-             {"key": 1550534600000, "keyAsString": "2019-02-19 : 02:00:00", "docCount": 351},
-             {"key": 1550534700000, "keyAsString": "2019-02-19 : 03:00:00", "docCount": 5331}]
-        avgFeedbackNotTransferredConvScoreOverTime:
-          type: array
-          description: >-
-            average score for the conversations (non-transferred only) on each time interval
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgFeedbackTransferredConvScoreOverTime:
-          type: array
-          description: >-
-            average score for the conversations (transferred only) on each time interval
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgAlgorithmNotTransferredConvScoreOverTime:
-          type: array
-          description: >-
-            average score for the conversations (non-transferred only) on each time interval, the scores are provided by an algorithm
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgAlgorithmTransferredConvScoreOverTime:
-          type: array
-          description: >-
-            average score for the conversations (transferred only) on each time interval, the scores are provided by an algorithm
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgFeedbackConvScoreOverTime:
-          type: array
-          description: >-
-            average score for the conversations (transferred and non-transferred) on each time interval
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgAlgorithmAnswerScoreOverTime:
-          type: array
-          description: >-
-            average score for the answers (transferred and transferred) on each time interval
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgFeedbackAnswerScoreOverTime:
-          type: array
-          description: >-
-            average score for the answers (transferred and non-transferred) on each time interval, the scores are provided by an algorithm
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  string representation of the bucket, format is 'YYYY-MM-dd : HH:mm:ss'
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
-        avgAlgorithmConvScoreOverTime:
-          type: array
-          description: >-
-            average score for the answers (transferred and transferred) on each time interval, the scores are provided by an algorithm
-            Only the buckets with more than one document will be returned.
-          items:
-            type: object
-            properties:
-              key:
-                type: number
-                format: long
-                description: a timestamp in milliseconds (bucket)
-              keyAsString:
-                type: string
-                description: >-
-                  "string representation of the bucket, format is '<YYYY>-<MM>-<dd> : <HH>:<mm>:<ss>'"
-              docCount:
-                type: number
-                format: long
-                description: how many conversations falls in the bucket
-              avgScore:
-                type: number
-                format: double
-                description: the average score in bucket
-          example: [{"keyAsString" : "2019-02-19 : 08:00:00", "key" : 1550563200000, "docCount" : 1, "avgScore" : 0.0},
-             {"keyAsString" : "2019-02-19 : 12:00:00", "key" : 1550577600000, "docCount" : 110168, "avgScore" : 1.0},
-             {"keyAsString" : "2019-02-19 : 13:00:00", "key" : 1550581200000, "docCount" : 25705, "avgScore" : 5.83544057576347E-4},
-             {"keyAsString" : "2019-02-19 : 14:00:00", "key" : 1550584800000, "docCount" : 7, "avgScore" : 12.0}]
+        scoreHistograms:
+          type: object
+          description: histogram of scores
+          additionalProperies:
+            type: array
+            items:
+              $ref: '#/components/schemas/ScoreHistogramItem'
+          example: {"scoreHistogram": [{"key": 0.0, "docCount": 13213}, {"key": 1.0, "docCount": 213}, {"key": 4.0, "docCount": 1013}]}
+        conversationsHistograms:
+          type: object
+          description: histogram of conversations (conversation counts)
+          additionalProperies:
+            type: array
+            items:
+              $ref: '#/components/schemas/ConversationsHistogramItem'
+          example: {"conversationsHistogram": [{"key": 1550534400000, "keyAsString": "2019-02-19 : 00:00:00", "docCount": 1213},
+                                       {"key": 1550534500000, "keyAsString": "2019-02-19 : 01:00:00", "docCount": 113},
+                                       {"key": 1550534600000, "keyAsString": "2019-02-19 : 02:00:00", "docCount": 1},
+                                       {"key": 1550534700000, "keyAsString": "2019-02-19 : 03:00:00", "docCount": 5331}]}
+        scoresOverTime:
+          type: object
+          description: distribution of scores over time
+          additionalProperies:
+            type: array
+            items:
+              $ref: '#/components/schemas/AvgScoresHistogramItem'
+          example: {"avgFeedbackConvScoreOverTime": [{"keyAsString": "2019-02-19 : 08:00:00", "key": 1550563200000, "docCount": 1, "avgScore": 0.0},
+                                       {"keyAsString": "2019-02-19 : 12:00:00", "key": 1550577600000, "docCount": 110168, "avgScore": 1.0},
+                                       {"keyAsString": "2019-02-19 : 13:00:00", "key": 1550581200000, "docCount": 25705, "avgScore": 5.83544057576347E-4},
+                                       {"keyAsString": "2019-02-19 : 14:00:00", "key": 1550584800000, "docCount": 7, "avgScore": 12.0}]}
     QAAggregatedAnalyticsRequest:
       type: object
       properties:
