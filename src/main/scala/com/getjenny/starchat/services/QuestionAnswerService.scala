@@ -1646,7 +1646,7 @@ trait QuestionAnswerService extends AbstractDataService {
     read(indexName, ids)
   }
 
-  def updateFuture(indexName: String, id: String, document: QADocumentUpdate, refresh: Int):
+  def updateFuture(indexName: String, document: QADocumentUpdate, refresh: Int):
   Future[UpdateDocumentsResult] = Future {
     update(indexName = indexName, document = document, refresh = refresh)
   }
