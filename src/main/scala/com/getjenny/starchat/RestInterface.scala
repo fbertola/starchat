@@ -72,7 +72,7 @@ trait RestInterface extends RootAPIResource
     LoggingEntities.logRequestAndResult(clUpdateTermsRoutes)~
     LoggingEntities.logRequestAndResult(clCountersCacheSizeRoutes) ~
     LoggingEntities.logRequestAndResultReduced(clQuestionAnswerConversationsRoutes) ~
-    LoggingEntities.logRequestAndResultReduced(pdQuestionAnswerAnalyticsRoutes) ~
+    LoggingEntities.logRequestAndResultReduced(clQuestionAnswerAnalyticsRoutes) ~
     LoggingEntities.logRequestAndResult(termsExtractionRoutes) ~
     LoggingEntities.logRequestAndResult(synExtractionRoutes) ~
     LoggingEntities.logRequestAndResult(freqExtractionRoutes) ~

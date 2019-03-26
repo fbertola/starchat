@@ -1284,6 +1284,8 @@ trait QuestionAnswerService extends AbstractDataService {
 
     builder.field("id", document.id)
     builder.field("conversation", document.conversation)
+
+    if (document.indexInConversation <= 0) throw QuestionAnswerServiceException("indexInConversation cannot be < 1")
     builder.field("index_in_conversation", document.indexInConversation)
 
     document.status match {
@@ -1455,7 +1457,9 @@ trait QuestionAnswerService extends AbstractDataService {
     }
 
     document.indexInConversation match {
-      case Some(t) => builder.field("indexInConversation", t)
+      case Some(t) =>
+        if (t <= 0) throw QuestionAnswerServiceException("indexInConversation cannot be < 1")
+        builder.field("indexInConversation", t)
       case _ => ;
     }
 
@@ -1532,7 +1536,7 @@ trait QuestionAnswerService extends AbstractDataService {
           case Some(t) => builder.field("dclass", t)
           case _ => ;
         }
-        builder.field("doctype", annotations.doctype)
+        builder.field("doctype", annotations.doctype.toString)
         annotations.state match {
           case Some(t) =>
             builder.field("state", t)
@@ -1563,7 +1567,10 @@ trait QuestionAnswerService extends AbstractDataService {
           case Some(t) => builder.field("algorithmAnswerScore", t)
           case _ => ;
         }
-        builder.field("start", annotations.start)
+        annotations.start match {
+          case Some(t) => builder.field("start", t)
+          case _ => ;
+        }
       case _ => ;
     }
     // end annotations
