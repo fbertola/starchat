@@ -9,11 +9,9 @@ import java.io._
 import com.getjenny.starchat.entities.{IndexManagementResponse, _}
 import com.getjenny.starchat.services.esclient.SystemIndexManagementElasticClient
 import org.elasticsearch.action.admin.cluster.health.ClusterHealthRequest
-import org.elasticsearch.action.admin.indices.create.{CreateIndexRequest, CreateIndexResponse}
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest
-import org.elasticsearch.action.admin.indices.mapping.get.{GetMappingsRequest, GetMappingsResponse}
-import org.elasticsearch.action.admin.indices.mapping.put.PutMappingRequest
 import org.elasticsearch.action.support.master.AcknowledgedResponse
+import org.elasticsearch.client.indices._
 import org.elasticsearch.client.{RequestOptions, RestHighLevelClient}
 import org.elasticsearch.common.settings._
 import org.elasticsearch.common.xcontent.XContentType
@@ -146,6 +144,7 @@ object SystemIndexManagementService extends AbstractDataService {
     IndexManagementResponse(message)
   }
 
+
   def update(indexSuffix: Option[String] = None) : Future[IndexManagementResponse] = Future {
     val client: RestHighLevelClient = elasticClient.httpClient
 
@@ -165,8 +164,7 @@ object SystemIndexManagementService extends AbstractDataService {
 
       val fullIndexName = elasticClient.indexName + "." + item.indexSuffix
 
-      val putMappingReq = new PutMappingRequest().indices(fullIndexName)
-        .`type`(item.indexSuffix)
+      val putMappingReq = new PutMappingRequest(fullIndexName)
         .source(schemaJson, XContentType.JSON)
 
       val putMappingRes: AcknowledgedResponse = client.indices

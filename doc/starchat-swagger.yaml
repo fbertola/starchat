@@ -2318,7 +2318,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateDocumentResult'
+                $ref: '#/components/schemas/UpdateDocumentsResult'
         '400':
           description: 'invalid input, object invalid, bad request'
         '401':
