@@ -13,8 +13,8 @@ import com.typesafe.config.{Config, ConfigFactory}
 import javax.net.ssl._
 import org.apache.http.HttpHost
 import org.apache.http.impl.nio.client.HttpAsyncClientBuilder
-import org.elasticsearch.action.admin.indices.get.GetIndexRequest
 import org.elasticsearch.action.admin.indices.refresh.{RefreshRequest, RefreshResponse}
+import org.elasticsearch.client.indices._
 import org.elasticsearch.client.{RequestOptions, RestClient, RestClientBuilder, RestHighLevelClient}
 import scalaz.Scalaz._
 
@@ -132,10 +132,8 @@ trait ElasticClient {
     this.esHttpClient
   }
 
-
   def existsIndices(indices: List[String]): Boolean = {
-    val request = new GetIndexRequest
-    request.indices(indices:_*)
+    val request = new GetIndexRequest(indices:_*)
     request.local(false)
     request.humanReadable(true)
     request.includeDefaults(false)

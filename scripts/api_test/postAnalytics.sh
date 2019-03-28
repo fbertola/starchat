@@ -11,6 +11,7 @@ curl -v -H "Authorization: Basic $(echo -n 'admin:adminp4ssw0rd' | base64)" \
 {
   \"interval\": \"1M\",
   \"aggregations\": [
+    \"totalConversations\",
     \"avgFeedbackConvScore\",
     \"avgFeedbackAnswerScore\",
     \"avgAlgorithmConvScore\",
@@ -29,7 +30,10 @@ curl -v -H "Authorization: Basic $(echo -n 'admin:adminp4ssw0rd' | base64)" \
     \"avgAlgorithmAnswerScoreOverTime\",
     \"avgFeedbackAnswerScoreOverTime\",
     \"avgAlgorithmConvScoreOverTime\"
-  ]
+  ],
+  \"timestampGte\": 1553620582269,
+  \"timestampLte\": 1553620582258,
+  \"minDocInBuckets\": 0
 }
 "
 

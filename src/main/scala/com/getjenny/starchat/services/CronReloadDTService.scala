@@ -15,7 +15,7 @@ import scala.util.{Failure, Success, Try}
 object CronReloadDTService extends CronService {
 
   class ReloadAnalyzersTickActor extends Actor {
-    protected[this] var updateTimestamp: Long = -1
+    protected[this] var updateTimestamp: Long = 0
 
     def receive: PartialFunction[Any, Unit] = {
       case `tickMessage` =>

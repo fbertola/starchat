@@ -47,8 +47,8 @@ case class DecisionTableRuntimeItem(executionOrder: Int = -1,
 
 case class ActiveAnalyzers(
                             var analyzerMap : mutable.LinkedHashMap[String, DecisionTableRuntimeItem],
-                            var lastEvaluationTimestamp: Long = -1L,
-                            var lastReloadingTimestamp: Long = -1L
+                            var lastEvaluationTimestamp: Long = 0L,
+                            var lastReloadingTimestamp: Long = 0L
                           )
 
 object AnalyzerService extends AbstractDataService {

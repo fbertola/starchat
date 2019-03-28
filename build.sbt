@@ -17,10 +17,10 @@ resolvers +=
   "Sonatype OSS Releases" at "https://oss.sonatype.org/service/local/staging/deploy/maven2"
 
 libraryDependencies ++= {
-  val AkkaHttpVersion	= "10.1.7"
-  val AkkaVersion	= "2.5.20"
+  val AkkaHttpVersion	= "10.1.8"
+  val AkkaVersion	= "2.5.21"
   val BreezeVersion	= "0.13.2"
-  val ESClientVersion	= "6.6.2"
+  val ESClientVersion	= "6.7.0"
   val LogbackVersion	= "1.2.3"
   val ParboiledVersion	= "2.1.4"
   val RoundeightsHasherVersion	= "1.2.0"
@@ -30,7 +30,7 @@ libraryDependencies ++= {
   val TikaVersion	= "1.18"
   val ManausLibVersion = "1.0.1"
   val StanfordCoreNLP = "3.9.1"
-  val AnalyzerVersion = "1.0.9"
+  val AnalyzerVersion = "1.0.10"
   Seq(
     "com.getjenny" %% "manaus-lib" % ManausLibVersion,
     "com.getjenny" %% "analyzer" % AnalyzerVersion,

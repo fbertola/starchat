@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-DOCID=${1:-0}
+DOCID=${1:-1}
 PORT=${2:-8888}
 INDEX_NAME=${3:-index_getjenny_english_0}
 ROUTE=${4:-knowledgebase}

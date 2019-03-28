@@ -917,6 +917,13 @@ paths:
           required: true
           schema:
             type: string
+        - in: query
+          name: refresh
+          description: when set to 1 StarChat force an index refresh
+          required: false
+          schema:
+            type: number
+            format: integer
       responses:
         '201':
           description: item created
@@ -947,6 +954,13 @@ paths:
           required: true
           schema:
             type: string
+        - in: query
+          name: refresh
+          description: when set to 1 StarChat force an index refresh
+          required: false
+          schema:
+            type: number
+            format: integer
       responses:
         '200':
           description: item updated
@@ -2304,7 +2318,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateDocumentResult'
+                $ref: '#/components/schemas/UpdateDocumentsResult'
         '400':
           description: 'invalid input, object invalid, bad request'
         '401':
@@ -4267,7 +4281,7 @@ components:
           * `avgAlgorithmAnswerScoreOverTime` -> average score for the answers (transferred and transferred) on each time interval
           * `avgFeedbackAnswerScoreOverTime` -> average score for the answers (transferred and non-transferred) on each time interval, the scores are provided by an algorithm
           * `avgAlgorithmConvScoreOverTime` -> average score for the answers (transferred and transferred) on each time interval, the scores are provided by an algorithm
-      example: totalConversations
+      example: avgFeedbackConvScore
       enum:
         - avgFeedbackConvScore
         - avgFeedbackAnswerScore
