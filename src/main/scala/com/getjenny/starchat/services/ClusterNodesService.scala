@@ -35,7 +35,7 @@ object ClusterNodesService extends AbstractDataService {
   override val elasticClient: SystemIndexManagementElasticClient.type = SystemIndexManagementElasticClient
   val uuid: String = randomUUID.toString
   private[this] val log: LoggingAdapter = Logging(SCActorSystem.system, this.getClass.getCanonicalName)
-  val indexName = Index.indexName(elasticClient.indexName, elasticClient.systemClusterNodesIndexSuffix)
+  val indexName: String = Index.indexName(elasticClient.indexName, elasticClient.systemClusterNodesIndexSuffix)
 
   def alive(refresh: Int = 0): ClusterNode = {
     val client: RestHighLevelClient = elasticClient.httpClient
@@ -47,7 +47,7 @@ object ClusterNodesService extends AbstractDataService {
 
     val updateReq = new UpdateRequest()
       .index(indexName)
-      .`type`(elasticClient.systemClusterNodesIndexSuffix)
+      .`type`("_doc")
       .doc(builder)
       .id(uuid)
       .docAsUpsert(true)
@@ -71,7 +71,7 @@ object ClusterNodesService extends AbstractDataService {
     val currTimestamp: Long = System.currentTimeMillis
 
     val getReq = new GetRequest()
-      .`type`(elasticClient.systemClusterNodesIndexSuffix)
+      .`type`("_doc")
       .index(indexName)
       .id(uuid)
 
@@ -127,7 +127,7 @@ object ClusterNodesService extends AbstractDataService {
 
     val searchReq = new SearchRequest(indexName)
       .source(sourceReq)
-      .types(elasticClient.systemClusterNodesIndexSuffix)
+      .types("_doc")
       .scroll(new TimeValue(60000))
 
     val scrollResp : SearchResponse = client.search(searchReq, RequestOptions.DEFAULT)

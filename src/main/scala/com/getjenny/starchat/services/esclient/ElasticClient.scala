@@ -146,7 +146,6 @@ trait ElasticClient {
 
   val indexName: String
   val indexSuffix: String
-  val indexMapping: String
 
   val commonIndexArbitraryPattern: String = config.getString("es.common_index_arbitrary_pattern")
   val commonIndexDefaultOrgPattern: String = config.getString("es.common_index_default_org_pattern")

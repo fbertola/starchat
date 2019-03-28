@@ -87,7 +87,6 @@ class SpellcheckResourceTest extends WordSpec with Matchers with ScalatestRouteT
         status shouldEqual StatusCodes.Created
         val response = responseAs[IndexDocumentResult]
         response.created should be (true)
-        response.dtype should be ("question_answer")
         response.id should be ("0")
         response.index should be ("index_getjenny_english_0.question_answer")
       }

@@ -5,7 +5,6 @@ package com.getjenny.starchat.entities
   */
 
 case class DeleteDocumentResult(index: String,
-                                dtype: String,
                                 id: String,
                                 version: Long,
                                 found: Boolean

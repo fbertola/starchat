@@ -340,7 +340,7 @@ object DecisionTableService extends AbstractDataService {
         ).ignoreUnmapped(true).innerHit(new InnerHitBuilder().setSize(100)),
           responseToDtDocumentDefault)
       case SearchAlgorithm.NGRAM2 =>
-        val scriptBody = "return doc['queries.query.ngram_2'].values.values ;"
+        val scriptBody = "return doc['queries.query.ngram_2'] ;"
         val script: Script = new Script(scriptBody)
         (QueryBuilders.nestedQuery(
           "queries",
@@ -351,7 +351,7 @@ object DecisionTableService extends AbstractDataService {
           .innerHit(new InnerHitBuilder().addScriptField("terms", script).setSize(100)),
           responseToDtDocumentNGrams(indexName, "ngram2", documentSearch))
       case SearchAlgorithm.STEM_NGRAM2 =>
-        val scriptBody = "return doc['queries.query.stemmed_ngram_2'].values.values ;"
+        val scriptBody = "return doc['queries.query.stemmed_ngram_2'] ;"
         val script: Script = new Script(scriptBody)
         (QueryBuilders.nestedQuery(
           "queries",
@@ -362,7 +362,7 @@ object DecisionTableService extends AbstractDataService {
           .innerHit(new InnerHitBuilder().addScriptField("terms", script).setSize(100)),
           responseToDtDocumentNGrams(indexName, "stemmed_ngram2", documentSearch))
       case SearchAlgorithm.NGRAM3 =>
-        val scriptBody = "return doc['queries.query.ngram_3'].values.values ;"
+        val scriptBody = "return doc['queries.query.ngram_3'] ;"
         val script: Script = new Script(scriptBody)
         (QueryBuilders.nestedQuery(
           "queries",
@@ -373,7 +373,7 @@ object DecisionTableService extends AbstractDataService {
           .innerHit(new InnerHitBuilder().addScriptField("terms", script).setSize(100)),
           responseToDtDocumentNGrams(indexName, "ngram3", documentSearch))
       case SearchAlgorithm.STEM_NGRAM3 =>
-        val scriptBody = "return doc['queries.query.stemmed_ngram_3'].values.values ;"
+        val scriptBody = "return doc['queries.query.stemmed_ngram_3'] ;"
         val script: Script = new Script(scriptBody)
         (QueryBuilders.nestedQuery(
           "queries",
@@ -384,7 +384,7 @@ object DecisionTableService extends AbstractDataService {
           .innerHit(new InnerHitBuilder().addScriptField("terms", script).setSize(100)),
           responseToDtDocumentNGrams(indexName, "stemmed_ngram3", documentSearch))
       case SearchAlgorithm.NGRAM4 =>
-        val scriptBody = "return doc['queries.query.ngram_4'].values.values ;"
+        val scriptBody = "return doc['queries.query.ngram_4'] ;"
         val script: Script = new Script(scriptBody)
         (QueryBuilders.nestedQuery(
           "queries",
@@ -395,7 +395,7 @@ object DecisionTableService extends AbstractDataService {
           .innerHit(new InnerHitBuilder().addScriptField("terms", script).setSize(100)),
           responseToDtDocumentNGrams(indexName, "ngram4", documentSearch))
       case SearchAlgorithm.STEM_NGRAM4 =>
-        val scriptBody = "return doc['queries.query.stemmed_ngram_4'].values.values ;"
+        val scriptBody = "return doc['queries.query.stemmed_ngram_4'] ;"
         val script: Script = new Script(scriptBody)
         (QueryBuilders.nestedQuery(
           "queries",
@@ -417,7 +417,7 @@ object DecisionTableService extends AbstractDataService {
 
     val searchReq = new SearchRequest(Index.indexName(indexName, elasticClient.indexSuffix))
       .source(sourceReq)
-      .types(elasticClient.indexSuffix)
+      .types("_doc")
       .searchType(SearchType.DFS_QUERY_THEN_FETCH)
 
     val minScore = documentSearch.minScore.getOrElse(
@@ -551,7 +551,7 @@ object DecisionTableService extends AbstractDataService {
 
     val indexReq = new IndexRequest()
       .index(Index.indexName(indexName, elasticClient.indexSuffix))
-      .`type`(elasticClient.indexSuffix)
+      .`type`("_doc")
       .id(document.state)
       .source(builder)
 
@@ -565,7 +565,6 @@ object DecisionTableService extends AbstractDataService {
     }
 
     val docResult: IndexDocumentResult = IndexDocumentResult(index = response.getIndex,
-      dtype = response.getType,
       id = response.getId,
       version = response.getVersion,
       created = response.status === RestStatus.CREATED
@@ -645,7 +644,7 @@ object DecisionTableService extends AbstractDataService {
 
     val updateReq = new UpdateRequest()
       .index(Index.indexName(indexName, elasticClient.indexSuffix))
-      .`type`(elasticClient.indexSuffix)
+      .`type`("_doc")
       .doc(builder)
       .id(document.state)
 
@@ -659,7 +658,6 @@ object DecisionTableService extends AbstractDataService {
     }
 
     val docResult: UpdateDocumentResult = UpdateDocumentResult(index = response.getIndex,
-      dtype = response.getType,
       id = response.getId,
       version = response.getVersion,
       created = response.status === RestStatus.CREATED
@@ -678,7 +676,7 @@ object DecisionTableService extends AbstractDataService {
 
     val searchReq = new SearchRequest(Index.indexName(indexName, elasticClient.indexSuffix))
       .source(sourceReq)
-      .types(elasticClient.indexSuffix)
+      .types("_doc")
       .scroll(new TimeValue(60000))
 
     var scrollResp: SearchResponse = client.search(searchReq, RequestOptions.DEFAULT)
@@ -773,7 +771,7 @@ object DecisionTableService extends AbstractDataService {
     // a list of specific ids was requested
     ids.foreach{id =>
       multiGetReq.add(
-        new MultiGetRequest.Item(Index.indexName(indexName, elasticClient.indexSuffix), elasticClient.indexSuffix, id)
+        new MultiGetRequest.Item(Index.indexName(indexName, elasticClient.indexSuffix), null, id)
       )
     }
 

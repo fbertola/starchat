@@ -56,18 +56,20 @@ object IndexManagementService extends AbstractDataService {
   )
 
   def create(indexName: String,
-             indexSuffix: Option[String] = None) : Future[IndexManagementResponse] = Future {
+             indexSuffix: Option[String] = None): Future[IndexManagementResponse] = Future {
     val client: RestHighLevelClient = elasticClient.httpClient
 
     // extract language from index name
-    val (_, language, _)= indexName match {
+    val (_, language, _) = indexName match {
       case Index.indexExtractFieldsRegexDelimited(orgPattern, languagePattern, arbitraryPattern) =>
         (orgPattern, languagePattern, arbitraryPattern)
       case _ => throw new Exception("index name is not well formed")
     }
 
     val analyzerJsonPath: String = analyzerFiles(language).path
-    val analyzerJsonIs: Option[InputStream] = Option{getClass.getResourceAsStream(analyzerJsonPath)}
+    val analyzerJsonIs: Option[InputStream] = Option {
+      getClass.getResourceAsStream(analyzerJsonPath)
+    }
     val analyzerJson: String = analyzerJsonIs match {
       case Some(stream) => Source.fromInputStream(stream, "utf-8").mkString
       case _ =>
@@ -81,7 +83,9 @@ object IndexManagementService extends AbstractDataService {
         case _ => true
       }
     }).map(item => {
-      val jsonInStream: Option[InputStream] = Option{getClass.getResourceAsStream(item.path)}
+      val jsonInStream: Option[InputStream] = Option {
+        getClass.getResourceAsStream(item.path)
+      }
 
       val schemaJson: String = jsonInStream match {
         case Some(stream) => Source.fromInputStream(stream, "utf-8").mkString
@@ -92,12 +96,11 @@ object IndexManagementService extends AbstractDataService {
 
       val fullIndexName = indexName + "." + item.indexSuffix
 
-      val createIndexReq = new CreateIndexRequest(fullIndexName)
-        .settings(Settings.builder().loadFromSource(analyzerJson, XContentType.JSON)
+      val createIndexReq = new CreateIndexRequest(fullIndexName).settings(
+        Settings.builder().loadFromSource(analyzerJson, XContentType.JSON)
           .put("index.number_of_shards", elasticClient.numberOfShards)
           .put("index.number_of_replicas", elasticClient.numberOfReplicas)
-        )
-        .source(schemaJson, XContentType.JSON)
+      ).source(schemaJson, XContentType.JSON)
 
       val createIndexRes: CreateIndexResponse = client.indices.create(createIndexReq, RequestOptions.DEFAULT)
 
@@ -110,10 +113,10 @@ object IndexManagementService extends AbstractDataService {
   }
 
   def remove(indexName: String,
-             indexSuffix: Option[String] = None) : Future[IndexManagementResponse] = Future {
+             indexSuffix: Option[String] = None): Future[IndexManagementResponse] = Future {
     val client: RestHighLevelClient = elasticClient.httpClient
 
-    if (! elasticClient.enableDeleteIndex) {
+    if (!elasticClient.enableDeleteIndex) {
       val message: String = "operation is not allowed, contact system administrator"
       throw IndexManagementServiceException(message)
     }
@@ -140,7 +143,7 @@ object IndexManagementService extends AbstractDataService {
   }
 
   def check(indexName: String,
-            indexSuffix: Option[String] = None) : Future[IndexManagementResponse] = Future {
+            indexSuffix: Option[String] = None): Future[IndexManagementResponse] = Future {
     val client: RestHighLevelClient = elasticClient.httpClient
 
     val operationsMessage: List[String] = schemaFiles.filter(item => {
@@ -192,13 +195,15 @@ object IndexManagementService extends AbstractDataService {
   }
 
   def updateSettings(indexName: String,
-                     indexSuffix: Option[String] = None) : Future[IndexManagementResponse] = Future {
+                     indexSuffix: Option[String] = None): Future[IndexManagementResponse] = Future {
     val client: RestHighLevelClient = elasticClient.httpClient
 
     val (_, language, _) = Index.patternsFromIndexName(indexName: String)
 
     val analyzerJsonPath: String = analyzerFiles(language).updatePath
-    val analyzerJsonIs: Option[InputStream] = Option{getClass.getResourceAsStream(analyzerJsonPath)}
+    val analyzerJsonIs: Option[InputStream] = Option {
+      getClass.getResourceAsStream(analyzerJsonPath)
+    }
     val analyzerJson: String = analyzerJsonIs match {
       case Some(stream) => Source.fromInputStream(stream, "utf-8").mkString
       case _ =>
@@ -229,7 +234,7 @@ object IndexManagementService extends AbstractDataService {
   }
 
   def updateMappings(indexName: String,
-                     indexSuffix: Option[String] = None) : Future[IndexManagementResponse] = Future {
+                     indexSuffix: Option[String] = None): Future[IndexManagementResponse] = Future {
     val client: RestHighLevelClient = elasticClient.httpClient
 
     val operationsMessage: List[String] = schemaFiles.filter(item => {
@@ -238,7 +243,9 @@ object IndexManagementService extends AbstractDataService {
         case _ => true
       }
     }).map(item => {
-      val jsonInStream: Option[InputStream] = Option{getClass.getResourceAsStream(item.updatePath)}
+      val jsonInStream: Option[InputStream] = Option {
+        getClass.getResourceAsStream(item.updatePath)
+      }
 
       val schemaJson: String = jsonInStream match {
         case Some(stream) => Source.fromInputStream(stream, "utf-8").mkString
@@ -264,7 +271,7 @@ object IndexManagementService extends AbstractDataService {
   }
 
   def refresh(indexName: String,
-              indexSuffix: Option[String] = None) : Future[RefreshIndexResults] = Future {
+              indexSuffix: Option[String] = None): Future[RefreshIndexResults] = Future {
     val operationsResults: List[RefreshIndexResult] = schemaFiles.filter(item => {
       indexSuffix match {
         case Some(t) => t === item.indexSuffix

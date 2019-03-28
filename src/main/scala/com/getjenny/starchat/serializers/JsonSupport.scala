@@ -62,9 +62,10 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
 
   implicit val qaAggregatedAnalyticsRequestFormat = jsonFormat6(QAAggregatedAnalyticsRequest)
   implicit val scoreHistogramFormat = jsonFormat2(ScoreHistogramItem)
-  implicit val conversationsHistogramFormat = jsonFormat3(ConversationsHistogramItem)
+  implicit val conversationsHistogramFormat = jsonFormat3(CountOverTimeHistogramItem)
+  implicit val labelCountHistogramItem = jsonFormat2(LabelCountHistogramItem)
   implicit val scoresOverTimeFormat = jsonFormat4(AvgScoresHistogramItem)
-  implicit val qaAggregatedAnalyticsFormat = jsonFormat9(QAAggregatedAnalytics)
+  implicit val qaAggregatedAnalyticsFormat = jsonFormat10(QAAggregatedAnalytics)
 
   ////////////////////////////
   implicit val doctypesUnmarshalling:
@@ -185,8 +186,6 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val qaDocumentCoreFormat = jsonFormat8(QADocumentCore)
   implicit val qaDocumentAnnotationsFormat = jsonFormat14(QADocumentAnnotations)
   implicit val qaDocumentFormat = jsonFormat7(QADocument)
-  implicit val qaDocumentCoreUpdateFormat = jsonFormat8(QADocumentCoreUpdate)
-  implicit val qaDocumentAnnotationsUpdateFormat = jsonFormat14(QADocumentAnnotationsUpdate)
   implicit val qaDocumentUpdateFormat = jsonFormat7(QADocumentUpdate)
   implicit val searchQADocumentFormat = jsonFormat2(SearchQADocument)
   implicit val searchDTDocumentFormat = jsonFormat2(SearchDTDocument)
@@ -194,9 +193,9 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val searchDTResultsFormat = jsonFormat3(SearchDTDocumentsResults)
   implicit val qaDocumentSearchFormat = jsonFormat12(QADocumentSearch)
   implicit val dtDocumentSearchFormat = jsonFormat9(DTDocumentSearch)
-  implicit val indexDocumentResultFormat = jsonFormat5(IndexDocumentResult)
-  implicit val updateDocumentResultFormat = jsonFormat5(UpdateDocumentResult)
-  implicit val deleteDocumentResultFormat = jsonFormat5(DeleteDocumentResult)
+  implicit val indexDocumentResultFormat = jsonFormat4(IndexDocumentResult)
+  implicit val updateDocumentResultFormat = jsonFormat4(UpdateDocumentResult)
+  implicit val deleteDocumentResultFormat = jsonFormat4(DeleteDocumentResult)
   implicit val indexDocumentResultListFormat = jsonFormat1(IndexDocumentListResult)
   implicit val updateDocumentResultListFormat = jsonFormat1(UpdateDocumentsResult)
   implicit val deleteDocumentResultListFormat = jsonFormat1(DeleteDocumentsResult)

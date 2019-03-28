@@ -122,7 +122,6 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
         status shouldEqual StatusCodes.Created
         val response = responseAs[IndexDocumentResult]
         response.created should be (true)
-        response.dtype should be ("state")
         response.id should be ("forgot_password")
         response.index should be ("index_getjenny_english_0.state")
         response.version should be (1)
@@ -131,7 +130,6 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
         status shouldEqual StatusCodes.Created
         val response = responseAs[IndexDocumentResult]
         response.created should be (true)
-        response.dtype should be ("state")
         response.id should be ("dont_tell_password")
         response.index should be ("index_getjenny_english_0.state")
         response.version should be (1)
@@ -163,7 +161,6 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
         status shouldEqual StatusCodes.Created
         val response = responseAs[IndexDocumentResult]
         response.created should be (false)
-        response.dtype should be ("state")
         response.id should be ("forgot_password")
         response.index should be ("index_getjenny_english_0.state")
         response.version should be (2)
@@ -196,7 +193,6 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
         status shouldEqual StatusCodes.OK
         val response = responseAs[UpdateDocumentResult]
         response.created should be (false)
-        response.dtype should be ("state")
         response.id should be ("forgot_password")
         response.index should be ("index_getjenny_english_0.state")
         response.version should be (3)
@@ -502,7 +498,6 @@ class DecisionTableResourceTest extends WordSpec with Matchers with ScalatestRou
         val headDeleteDocumentResult = response.data.headOption.getOrElse(fail)
         headDeleteDocumentResult.index should be ("index_getjenny_english_0.state")
         headDeleteDocumentResult.id should be ("forgot_password")
-        headDeleteDocumentResult.dtype should be ("state")
         headDeleteDocumentResult.found should be (true)
         headDeleteDocumentResult.version should be (4)
       }

@@ -11,14 +11,14 @@ import scala.util.matching.Regex
 
 object Index {
 
-  private[this] val orgNameRegex: String = "[A-Za-z0-9\\-]{1,256}"
+  private[this] val orgNameRegex: String = "[a-z0-9\\-]{1,256}"
   private[this] val langRegex: String = "[a-z]{1,256}"
-  private[this] val arbitraryPatternRegex: String = "[A-Za-z0-9_]{1,256}"
+  private[this] val arbitraryPatternRegex: String = "[a-z0-9_]{1,256}"
 
   val orgNameMatchRegexDelimited: Regex = ("^(" + orgNameRegex + ")$").r
 
   /** regular expression to match index names */
-  val systemIndexMatchRegex: Regex = "(starchat_system_[A-Za-z0-9\\-]{1,256})".r
+  val systemIndexMatchRegex: Regex = "(starchat_system_[a-z0-9\\-]{1,256})".r
   val systemIndexMatchRegexDelimited: Regex = ("^" + systemIndexMatchRegex + "$").r
 
   val indexMatchRegex: Regex = ("(index_(?:" +

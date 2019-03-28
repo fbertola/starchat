@@ -215,7 +215,8 @@ class QAResource(questionAnswerService: QuestionAnswerService, routeName: String
                   entity(as[DocsIds]) { request_data =>
                     if (request_data.ids.nonEmpty) {
                       val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker()
-                      onCompleteWithBreaker(breaker)(questionAnswerService.delete(indexName, request_data.ids, refresh)) {
+                      onCompleteWithBreaker(breaker)(
+                        questionAnswerService.delete(indexName, request_data.ids, refresh)) {
                         case Success(t) =>
                           completeResponse(StatusCodes.OK, StatusCodes.BadRequest, t)
                         case Failure(e) =>

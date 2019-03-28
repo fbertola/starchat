@@ -7,7 +7,6 @@ package com.getjenny.starchat.services.esclient
 object SystemIndexManagementElasticClient extends ElasticClient {
   override val indexName: String = config.getString("es.system_index_name")
   override val indexSuffix: String = ""
-  override val indexMapping: String = ""
 
   // decision table changes awareness per index mechanism
   val dtReloadCheckFrequency : Int = config.getInt("es.dt_reload_check_frequency")

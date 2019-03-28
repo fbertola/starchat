@@ -3,8 +3,8 @@
 PORT=${1:-8888}
 INDEX_NAME=${2:-index_getjenny_english_0}
 #ROUTE=${3:-prior_data}
-#ROUTE=${3:-conversation_logs}
-ROUTE=${3:-knowledgebase}
+ROUTE=${3:-conversation_logs}
+#ROUTE=${3:-knowledgebase}
 
 curl -v -H "Authorization: Basic $(echo -n 'test_user:p4ssw0rd' | base64)" \
   -H "Content-Type: application/json" -X POST http://localhost:${PORT}/${INDEX_NAME}/${ROUTE} -d '{
@@ -50,6 +50,7 @@ curl -v -H "Authorization: Basic $(echo -n 'test_user:p4ssw0rd' | base64)" \
     "verified": true
   },
   "annotations": {
+    "state": "state1",
     "doctype": "NORMAL"
   }
 }'
@@ -98,6 +99,7 @@ curl -v -H "Authorization: Basic $(echo -n 'test_user:p4ssw0rd' | base64)" \
     "verified": true
   },
   "annotations": {
+    "state": "state2",
     "doctype": "NORMAL",
     "feedbackConvScore": 5.0
   }
@@ -147,6 +149,7 @@ curl -v -H "Authorization: Basic $(echo -n 'test_user:p4ssw0rd' | base64)" \
     "verified": true
   },
   "annotations": {
+    "state": "state3",
     "doctype": "NORMAL"
   }
 }'
@@ -195,6 +198,7 @@ curl -v -H "Authorization: Basic $(echo -n 'test_user:p4ssw0rd' | base64)" \
     "verified": true
   },
   "annotations": {
+    "state": "state1",
     "doctype": "NORMAL",
     "feedbackConvScore": 3.0
   }
@@ -246,6 +250,7 @@ curl -v -H "Authorization: Basic $(echo -n 'test_user:p4ssw0rd' | base64)" \
     "verified": true
   },
   "annotations": {
+    "state": "state2",
     "doctype": "NORMAL",
     "escalated": "TRANSFERRED"
   }
@@ -295,6 +300,7 @@ curl -v -H "Authorization: Basic $(echo -n 'test_user:p4ssw0rd' | base64)" \
     "verified": true
   },
   "annotations": {
+    "state": "state3",
     "doctype": "NORMAL",
     "feedbackConvScore": 6.0,
     "escalated": "TRANSFERRED"
@@ -345,6 +351,7 @@ curl -v -H "Authorization: Basic $(echo -n 'test_user:p4ssw0rd' | base64)" \
     "verified": true
   },
   "annotations": {
+    "state": "state1",
     "doctype": "NORMAL",
     "escalated": "TRANSFERRED"
   }
@@ -394,6 +401,7 @@ curl -v -H "Authorization: Basic $(echo -n 'test_user:p4ssw0rd' | base64)" \
     "verified": true
   },
   "annotations": {
+    "state": "state2",
     "doctype": "NORMAL",
     "feedbackConvScore": 3.0,
     "escalated": "TRANSFERRED"
