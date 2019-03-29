@@ -1728,8 +1728,7 @@ trait QuestionAnswerService extends AbstractDataService {
     ids.foreach{ id =>
       multigetReq.add(
         new MultiGetRequest.Item(Index
-          .indexName(indexName, elasticClient.indexSuffix),
-          elasticClient.indexSuffix, id)
+          .indexName(indexName, elasticClient.indexSuffix), null, id)
       )
     }
 
