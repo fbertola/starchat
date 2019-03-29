@@ -9,7 +9,12 @@ case class ScoreHistogramItem(
                            docCount: Long
                          )
 
-case class ConversationsHistogramItem(
+case class LabelCountHistogramItem(
+                                  key: String,
+                                  docCount: Long
+                                )
+
+case class CountOverTimeHistogramItem(
                                    key: Long,
                                    keyAsString: String,
                                    docCount: Long
@@ -30,6 +35,7 @@ case class QAAggregatedAnalytics(
                                   avgAlgorithmAnswerScore: Option[Double] = None,
                                   avgFeedbackAnswerScore: Option[Double] = None,
                                   scoreHistograms: Option[Map[String, List[ScoreHistogramItem]]] = None,
-                                  conversationsHistograms: Option[Map[String, List[ConversationsHistogramItem]]] = None,
+                                  labelCountHistograms: Option[Map[String, List[LabelCountHistogramItem]]] = None,
+                                  countOverTimeHistograms: Option[Map[String, List[CountOverTimeHistogramItem]]] = None,
                                   scoresOverTime: Option[Map[String, List[AvgScoresHistogramItem]]] = None
                                 )

@@ -18,7 +18,7 @@ import org.elasticsearch.action.admin.indices.analyze.{AnalyzeRequest, AnalyzeRe
 import org.elasticsearch.action.bulk._
 import org.elasticsearch.action.get.{GetResponse, MultiGetItemResponse, MultiGetRequest, MultiGetResponse}
 import org.elasticsearch.action.index.IndexRequest
-import org.elasticsearch.action.search.{SearchRequest, SearchResponse, SearchType}
+import org.elasticsearch.action.search.{SearchRequest, SearchResponse, SearchScrollRequest, SearchType}
 import org.elasticsearch.action.update.UpdateRequest
 import org.elasticsearch.client.{RequestOptions, RestHighLevelClient}
 import org.elasticsearch.common.unit.TimeValue
@@ -234,7 +234,7 @@ object TermService extends AbstractDataService {
       builder.endObject()
 
       val indexTermReq = new IndexRequest(Index.indexName(indexName, elasticClient.indexSuffix))
-        .`type`(elasticClient.indexSuffix)
+        .`type`("_doc")
         .id(term.term)
         .source(builder)
 
@@ -244,9 +244,7 @@ object TermService extends AbstractDataService {
     val bulkResponse: BulkResponse = client.bulk(bulkReq, RequestOptions.DEFAULT)
 
     val listOfDocRes: List[IndexDocumentResult] = bulkResponse.getItems.map(x => {
-      IndexDocumentResult(x.getIndex, x.getType, x.getId,
-        x.getVersion,
-        x.status === RestStatus.CREATED)
+      IndexDocumentResult(x.getIndex, x.getId, x.getVersion, x.status === RestStatus.CREATED)
     }).toList
 
     IndexDocumentListResult(listOfDocRes)
@@ -266,8 +264,7 @@ object TermService extends AbstractDataService {
       val multiGetReq = new MultiGetRequest()
 
       termsRequest.ids.foreach{id => multiGetReq.add(
-        new MultiGetRequest.Item(Index.indexName(indexName, elasticClient.indexSuffix),
-          elasticClient.indexSuffix, id))
+        new MultiGetRequest.Item(Index.indexName(indexName, elasticClient.indexSuffix),null, id))
       }
 
       val response: MultiGetResponse = client.mget(multiGetReq, RequestOptions.DEFAULT)
@@ -435,7 +432,7 @@ object TermService extends AbstractDataService {
 
       val updateTermReq = new UpdateRequest()
         .index(Index.indexName(indexName, elasticClient.indexSuffix))
-        .`type`(elasticClient.indexSuffix)
+        .`type`("_doc")
         .docAsUpsert(true)
         .id(term.term)
         .doc(builder)
@@ -453,9 +450,7 @@ object TermService extends AbstractDataService {
     }
 
     val listOfDocRes: List[UpdateDocumentResult] = bulkRes.getItems.map(x => {
-      UpdateDocumentResult(x.getIndex, x.getType, x.getId,
-        x.getVersion,
-        x.status === RestStatus.CREATED)
+      UpdateDocumentResult(x.getIndex, x.getId, x.getVersion, x.status === RestStatus.CREATED)
     }).toList
 
     UpdateDocumentsResult(listOfDocRes)
@@ -514,7 +509,7 @@ object TermService extends AbstractDataService {
 
     val searchReq = new SearchRequest(Index.indexName(indexName, elasticClient.indexSuffix))
       .source(sourceReq)
-      .types(elasticClient.indexSuffix)
+      .types("_doc")
       .searchType(SearchType.DFS_QUERY_THEN_FETCH)
 
     val boolQueryBuilder: BoolQueryBuilder = QueryBuilders.boolQuery()
@@ -730,10 +725,11 @@ object TermService extends AbstractDataService {
 
     val searchReq = new SearchRequest(Index.indexName(indexName, elasticClient.indexSuffix))
       .source(sourceReq)
-      .types(elasticClient.indexSuffix)
+      .types("_doc")
       .scroll(new TimeValue(keepAlive))
 
     var scrollResp: SearchResponse = client.search(searchReq, RequestOptions.DEFAULT)
+    val scrollId = scrollResp.getScrollId
 
     val iterator = Iterator.continually{
       val documents = scrollResp.getHits.getHits.toList.map { e =>
@@ -798,7 +794,9 @@ object TermService extends AbstractDataService {
           score = None: Option[Double])
       }
 
-      scrollResp = client.search(searchReq, RequestOptions.DEFAULT)
+      var scrollRequest: SearchScrollRequest = new SearchScrollRequest(scrollId)
+      scrollRequest.scroll(new TimeValue(keepAlive))
+      scrollResp = client.scroll(scrollRequest, RequestOptions.DEFAULT)
       (documents, documents.nonEmpty)
     }.takeWhile{case (_, docNonEmpty) => docNonEmpty}
       .flatMap{case (doc, _) => doc}

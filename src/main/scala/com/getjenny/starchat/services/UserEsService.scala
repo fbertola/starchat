@@ -67,7 +67,7 @@ class UserEsService extends AbstractUserService {
     val indexReq = new IndexRequest()
       .index(indexName)
       .create(true)
-      .`type`(elasticClient.userIndexSuffix)
+      .`type`("_doc")
       .id(user.id)
       .source(builder)
 
@@ -79,7 +79,6 @@ class UserEsService extends AbstractUserService {
     }
 
     val docResult: IndexDocumentResult = IndexDocumentResult(index = response.getIndex,
-      dtype = response.getType,
       id = response.getId,
       version = response.getVersion,
       created = response.status === RestStatus.CREATED
@@ -125,7 +124,7 @@ class UserEsService extends AbstractUserService {
 
     val updateReq = new UpdateRequest()
       .index(indexName)
-      .`type`(elasticClient.userIndexSuffix)
+      .`type`("_doc")
       .doc(builder)
       .id(user.id)
 
@@ -137,7 +136,6 @@ class UserEsService extends AbstractUserService {
     }
 
     val docResult: UpdateDocumentResult = UpdateDocumentResult(index = response.getIndex,
-      dtype = response.getType,
       id = response.getId,
       version = response.getVersion,
       created = response.status === RestStatus.CREATED
@@ -156,7 +154,7 @@ class UserEsService extends AbstractUserService {
 
     val deleteReq = new DeleteRequest()
       .index(indexName)
-      .`type`(elasticClient.userIndexSuffix)
+      .`type`("_doc")
       .id(user.id)
 
     val response: DeleteResponse = client.delete(deleteReq, RequestOptions.DEFAULT)
@@ -167,7 +165,6 @@ class UserEsService extends AbstractUserService {
     }
 
     val docResult: DeleteDocumentResult = DeleteDocumentResult(index = response.getIndex,
-      dtype = response.getType,
       id = response.getId,
       version = response.getVersion,
       found = response.status =/= RestStatus.NOT_FOUND
@@ -185,7 +182,7 @@ class UserEsService extends AbstractUserService {
 
       val getReq = new GetRequest()
         .index(indexName)
-        .`type`(elasticClient.userIndexSuffix)
+        .`type`("_doc")
         .id(user.id)
 
       val response: GetResponse = client.get(getReq, RequestOptions.DEFAULT)

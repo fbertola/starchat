@@ -27,7 +27,7 @@ import scala.collection.immutable.Map
 import scala.concurrent.Future
 
 object DtReloadService extends AbstractDataService {
-  val DT_RELOAD_TIMESTAMP_DEFAULT : Long = -1
+  val DT_RELOAD_TIMESTAMP_DEFAULT : Long = 0
   override val elasticClient: SystemIndexManagementElasticClient.type = SystemIndexManagementElasticClient
   private[this] val log: LoggingAdapter = Logging(SCActorSystem.system, this.getClass.getCanonicalName)
   private[this] val indexName: String =
@@ -44,7 +44,7 @@ object DtReloadService extends AbstractDataService {
 
     val updateReq = new UpdateRequest()
       .index(indexName)
-      .`type`(elasticClient.systemRefreshDtIndexSuffix)
+      .`type`("_doc")
       .doc(builder)
       .id(dtIndexName)
       .docAsUpsert(true)
@@ -69,7 +69,7 @@ object DtReloadService extends AbstractDataService {
     val dtReloadDocId: String = dtIndexName
 
     val getReq = new GetRequest()
-      .`type`(elasticClient.systemRefreshDtIndexSuffix)
+      .`type`("_doc")
       .index(indexName)
       .id(dtReloadDocId)
 
@@ -109,7 +109,7 @@ object DtReloadService extends AbstractDataService {
 
     val searchReq = new SearchRequest(indexName)
       .source(sourceReq)
-      .types(elasticClient.systemRefreshDtIndexSuffix)
+      .types("_doc")
       .scroll(new TimeValue(60000))
 
     val scrollResp : SearchResponse = client.search(searchReq, RequestOptions.DEFAULT)

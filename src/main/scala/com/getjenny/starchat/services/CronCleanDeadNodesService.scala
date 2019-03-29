@@ -35,5 +35,4 @@ object CronCleanDeadNodesService extends CronService {
       actorRef,
       tickMessage)
   }
-
 }

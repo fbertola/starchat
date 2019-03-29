@@ -44,7 +44,7 @@ trait AbstractDataService {
   /** delete one or more terms
     *
     * @param indexName index name
-    * @param docIds the list of term ids to delete
+    * @param ids the list of term ids to delete
     * @param refresh whether to call an index update on ElasticSearch or not
     * @return DeleteDocumentListResult with the result of term delete operations
     */
@@ -56,7 +56,7 @@ trait AbstractDataService {
     ids.foreach( id => {
       val deleteReq = new DeleteRequest()
         .index(Index.indexName(indexName, elasticClient.indexSuffix))
-        .`type`(elasticClient.indexMapping)
+        .`type`("_doc")
         .id(id)
       bulkReq.add(deleteReq)
     })
@@ -72,9 +72,7 @@ trait AbstractDataService {
     }
 
     val listOfDocRes: List[DeleteDocumentResult] = bulkRes.getItems.map(x => {
-      DeleteDocumentResult(x.getIndex, x.getType, x.getId,
-        x.getVersion,
-        x.status =/= RestStatus.NOT_FOUND)
+      DeleteDocumentResult(x.getIndex, x.getId, x.getVersion, x.status =/= RestStatus.NOT_FOUND)
     }).toList
 
     DeleteDocumentsResult(data=listOfDocRes)

@@ -5,7 +5,6 @@ package com.getjenny.starchat.entities
   */
 
 case class UpdateDocumentResult(index: String,
-                               dtype: String,
                                id: String,
                                version: Long,
                                created: Boolean

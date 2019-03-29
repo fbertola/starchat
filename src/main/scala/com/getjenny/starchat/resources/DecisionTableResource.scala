@@ -222,7 +222,7 @@ trait DecisionTableResource extends StarChatResource {
                                 })
                             }
                           )
-                        case e @ (_: ResponseServiceNoResponseException | _: AnalyzerEvaluationException) =>
+                        case e@(_: ResponseServiceNoResponseException | _: AnalyzerEvaluationException) =>
                           val message = "index(" + indexName + ") DecisionTableResource: " +
                             "Unable to complete the request: " + e.getMessage
                           log.error(message = message)
@@ -235,7 +235,7 @@ trait DecisionTableResource extends StarChatResource {
                                 })
                             }
                           )
-                        case e @ (_: ResponseServiceDocumentNotFoundException | _: AnalyzerEvaluationException) =>
+                        case e@(_: ResponseServiceDocumentNotFoundException | _: AnalyzerEvaluationException) =>
                           val message = "index(" + indexName + ") DecisionTableResource: " +
                             "Unable to complete the request: " + e.getMessage
                           log.error(message = message)
@@ -248,7 +248,7 @@ trait DecisionTableResource extends StarChatResource {
                                 })
                             }
                           )
-                        case e @ (_: CircuitBreakerOpenRejection) =>
+                        case e@(_: CircuitBreakerOpenRejection) =>
                           val message = "index(" + indexName + ") DecisionTableResource: " +
                             "The request the takes too much time: " + e.getMessage +
                             " : stacktrace(" + e.getStackTrace.map(x => x.toString).mkString(";") + ")"
@@ -364,7 +364,8 @@ trait DecisionTableResource extends StarChatResource {
                 authenticator.hasPermissions(user, indexName, Permissions.write)) {
                 parameters("id".as[String].*, "refresh".as[Int] ? 0) { (ids, refresh) =>
                   val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker()
-                  onCompleteWithBreaker(breaker)(decisionTableService.delete(indexName, ids.toList, refresh)) {
+                  onCompleteWithBreaker(breaker)(
+                    decisionTableService.delete(indexName, ids.toList, refresh)) {
                     case Success(t) =>
                       completeResponse(StatusCodes.OK, StatusCodes.BadRequest, t)
                     case Failure(e) =>

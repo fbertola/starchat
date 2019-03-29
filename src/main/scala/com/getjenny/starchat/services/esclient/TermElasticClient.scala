@@ -7,5 +7,4 @@ package com.getjenny.starchat.services.esclient
 object TermElasticClient extends ElasticClient {
   override val indexName: String = ""
   override val indexSuffix: String = termIndexSuffix
-  override val indexMapping: String = ""
 }

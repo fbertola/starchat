@@ -1594,7 +1594,6 @@ paths:
                 "data": [
                   {
                     "index": "index_getjenny_english_usecase0",
-                    "dtype": "state",
                     "id": "hello",
                     "version": 1,
                     "found": true
@@ -1636,7 +1635,6 @@ paths:
                 "data": [
                   {
                     "index": "index_getjenny_english_usecase0",
-                    "dtype": "state",
                     "id": "hello",
                     "version": 3,
                     "found": true
@@ -2630,7 +2628,6 @@ components:
       type: object
       required:
         - index
-        - dtype
         - id
         - version
         - created
@@ -2639,10 +2636,6 @@ components:
           type: string
           description: name of the index
           example: index_getjenny_italian_usecase0.state
-        dtype:
-          type: string
-          description: name of the data table
-          example: state
         id:
           type: string
           description: document id
@@ -2891,10 +2884,6 @@ components:
           type: string
           description: the index name
           example: index_getjenny_english_usecase0
-        dtype:
-          type: string
-          description: the document data type
-          example: state
         id:
           type: string
           description: the document id
@@ -3090,10 +3079,6 @@ components:
           type: string
           description: index name
           example: index_getjenny_english_usecase0
-        dtype:
-          type: string
-          description: the document type
-          example: state
         id:
           type: string
           description: the document id
@@ -4273,6 +4258,10 @@ components:
           * `conversationsHistogram` -> time range histogram of the number of conversations on a time range (transferred and non-transferred)
           * `conversationsNotTransferredHistogram` -> time range histogram of the number of conversations on a time range (non-transferred only)
           * `conversationsTransferredHistogram` -> time range histogram of the number of conversations on a time range (transferred only)
+          * `qaPairHistogram` -> time range histogram of the Q/A documents (only starchat agent, answered + unanswered)
+          * `qaPairAnsweredHistogram` -> time range histogram of the number of answered Q/A documents (only starchat agent)
+          * `qaPairUnansweredHistogram` -> time range histogram of the number of unanswered Q/A documents (only starchat agent)
+          * `qaMatchedStatesHistogram` -> histogram of matched states
           * `avgFeedbackNotTransferredConvScoreOverTime` -> average score for the conversations (non-transferred only) on each time interval
           * `avgFeedbackTransferredConvScoreOverTime` -> average score for the conversations (transferred only) on each time interval
           * `avgAlgorithmNotTransferredConvScoreOverTime` -> average score for the conversations (non-transferred only) on each time interval, the scores are provided by an algorithm
@@ -4293,6 +4282,10 @@ components:
         - conversationsHistogram
         - conversationsNotTransferredHistogram
         - conversationsTransferredHistogram
+        - qaPairHistogram
+        - qaPairAnsweredHistogram
+        - qaPairUnansweredHistogram
+        - qaMatchedStatesHistogram
         - avgFeedbackNotTransferredConvScoreOverTime
         - avgFeedbackTransferredConvScoreOverTime
         - avgAlgorithmNotTransferredConvScoreOverTime
@@ -4320,7 +4313,7 @@ components:
           * `q` -> quarters, multiple not supported, supported value 1q
           * `y` -> years, multiple not supported, supported value 1y
       example: 1M
-    ConversationsHistogramItem:
+    CountOverTimeHistogramItem:
       type: object
       requested:
         - key
@@ -4386,6 +4379,21 @@ components:
           format: long
           description: how many score falls in the bucket
           example: 13214
+    LabelCountHistogramItem:
+      type: object
+      requested:
+        - key
+        - docCount
+      properties:
+        key:
+          type: string
+          description: a label (bucket)
+          example: "keyword1"
+        docCount:
+          type: number
+          format: long
+          description: how many score falls in the bucket
+          example: 13214
     QAAggregatedAnalytics:
       type: object
       requested:
@@ -4430,13 +4438,21 @@ components:
             items:
               $ref: '#/components/schemas/ScoreHistogramItem'
           example: {"scoreHistogram": [{"key": 0.0, "docCount": 13213}, {"key": 1.0, "docCount": 213}, {"key": 4.0, "docCount": 1013}]}
-        conversationsHistograms:
+        labelCountHistograms:
+          type: object
+          description: count of labels
+          additionalProperies:
+            type: array
+            items:
+              $ref: '#/components/schemas/LabelCountHistogramItem'
+          example: {"scoreHistogram": [{"key": "keyword1", "docCount": 13213}, {"key": "keyword2", "docCount": 213}, {"key": "keyword3", "docCount": 1013}]}
+        countOverTimeHistograms:
           type: object
           description: histogram of conversations (conversation counts)
           additionalProperies:
             type: array
             items:
-              $ref: '#/components/schemas/ConversationsHistogramItem'
+              $ref: '#/components/schemas/CountOverTimeHistogramItem'
           example: {"conversationsHistogram": [{"key": 1550534400000, "keyAsString": "2019-02-19 : 00:00:00", "docCount": 1213},
                                        {"key": 1550534500000, "keyAsString": "2019-02-19 : 01:00:00", "docCount": 113},
                                        {"key": 1550534600000, "keyAsString": "2019-02-19 : 02:00:00", "docCount": 1},

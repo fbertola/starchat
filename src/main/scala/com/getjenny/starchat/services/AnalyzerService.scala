@@ -73,7 +73,7 @@ object AnalyzerService extends AbstractDataService {
 
     val searchReq = new SearchRequest(Index.indexName(indexName, elasticClient.indexSuffix))
       .source(sourceReq)
-      .types(elasticClient.indexSuffix)
+      .types("_doc")
       .scroll(new TimeValue(60000))
 
     var scrollResp: SearchResponse = client.search(searchReq, RequestOptions.DEFAULT)
