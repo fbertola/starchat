@@ -1344,7 +1344,7 @@ trait QuestionAnswerService extends AbstractDataService {
         } else None
 
         val labelCountHistograms: Map[String, List[LabelCountHistogramItem]] = Map(
-          "scoreHistogram" -> qaMatchedStatesHistogram,
+          "qaMatchedStatesHistogram" -> qaMatchedStatesHistogram,
         ).filter{case (_, v) => v.nonEmpty}.map{case(k, v) => (k, v.get)}
 
         val scoreHistograms: Map[String, List[ScoreHistogramItem]] = Map(
@@ -1728,8 +1728,7 @@ trait QuestionAnswerService extends AbstractDataService {
     ids.foreach{ id =>
       multigetReq.add(
         new MultiGetRequest.Item(Index
-          .indexName(indexName, elasticClient.indexSuffix),
-          elasticClient.indexSuffix, id)
+          .indexName(indexName, elasticClient.indexSuffix), null, id)
       )
     }
 
