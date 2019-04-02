@@ -23,12 +23,12 @@ class LanguageGuesserAtomic (arguments: List[String], restrictedArgs: Map[String
   /** Optional list of languages to match the guessed language */
   val languages: Option[List[String]] = arguments.drop(2) match {
     case Nil => None
-    case t => Some(t)
+    case t: List[String] => Some(t)
   }
 
   val isEvaluateNormalized = true
 
-  private val detector: LanguageDetector = new OptimaizeLangDetector().loadModels()
+  private[this] val detector: LanguageDetector = new OptimaizeLangDetector().loadModels()
 
   override def toString: String = "languageGuesser(\"" + variableName + "\", \"" + minScoreThreshold + "\"" +
   (languages match {
