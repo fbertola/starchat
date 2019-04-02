@@ -321,6 +321,58 @@ class AnalyzersPlaygroundResourceTest extends WordSpec with Matchers with Scalat
   }
 
   it should {
+    "return an HTTP code 200 when guessing the language" in {
+      val evaluateRequest: AnalyzerEvaluateRequest =
+        AnalyzerEvaluateRequest(
+          query = "guess the language of this sentence",
+          analyzer = """languageGuesser("lang", "0.8", ["et", "fi", "en"])""",
+          data = Option {
+            AnalyzersData(
+              traversedStates = Vector("one", "two")
+            )
+          }
+        )
+      Post(s"/index_getjenny_english_0/analyzer/playground", evaluateRequest) ~> addCredentials(testUserCredentials) ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val response = responseAs[AnalyzerEvaluateResponse]
+        response.data.getOrElse(fail).traversedStates should be (Vector("one", "two"))
+        response.data.getOrElse(fail).extractedVariables("lang") should be ("en")
+        response.value should be (1)
+      }
+
+      Post(s"/index_getjenny_english_0/analyzer/playground", evaluateRequest.copy(
+      analyzer = """languageGuesser("guessed_language", "0.8")""")) ~>
+      addCredentials(testUserCredentials) ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val response = responseAs[AnalyzerEvaluateResponse]
+        response.data.getOrElse(fail).traversedStates should be (Vector("one", "two"))
+        response.data.getOrElse(fail).extractedVariables("guessed_language") should be ("en")
+        response.value should be (1)
+      }
+
+      Post(s"/index_getjenny_english_0/analyzer/playground", evaluateRequest.copy(
+      query = "indovina la lingua di questa frase")) ~>
+      addCredentials(testUserCredentials) ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val response = responseAs[AnalyzerEvaluateResponse]
+        response.data.getOrElse(fail).traversedStates should be (Vector("one", "two"))
+        response.data.getOrElse(fail).extractedVariables("lang") should be ("it")
+        response.value should be (0)
+      }
+
+      Post(s"/index_getjenny_english_0/analyzer/playground", evaluateRequest.copy(
+      analyzer = """languageGuesser("lng", "1")""")) ~>
+      addCredentials(testUserCredentials) ~> routes ~> check {
+        status shouldEqual StatusCodes.OK
+        val response = responseAs[AnalyzerEvaluateResponse]
+        response.data.getOrElse(fail).traversedStates should be (Vector("one", "two"))
+        response.data.getOrElse(fail).extractedVariables("lng") should be ("en")
+        response.value should be (0)
+      }
+    }
+  }
+
+  it should {
     "return an HTTP code 200 when deleting an index" in {
       Delete(s"/index_getjenny_english_0/index_management") ~> addCredentials(testAdminCredentials) ~> routes ~> check {
         status shouldEqual StatusCodes.OK
