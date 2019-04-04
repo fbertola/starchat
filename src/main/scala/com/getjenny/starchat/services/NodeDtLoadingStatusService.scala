@@ -123,7 +123,7 @@ object NodeDtLoadingStatusService extends AbstractDataService {
 
     NodeLoadingAllDtStatus(
       totalIndexes = idxUpdateStatus.length.toLong,
-      updatedIndexes = idxUpdateStatus.filter(_._2).length.toLong,
+      updatedIndexes = idxUpdateStatus.filter{case(_, status) => status}.length.toLong,
       indexes = if(verbose) idxUpdateStatus else Map.empty[String, Boolean]
     )
   }

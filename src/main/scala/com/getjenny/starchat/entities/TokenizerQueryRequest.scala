@@ -39,5 +39,5 @@ case class TokenizerResponseItem(
 )
 
 case class TokenizerResponse(
-  tokens: List[TokenizerResponseItem]
+  tokens: List[TokenizerResponseItem] = List.empty[TokenizerResponseItem]
 )

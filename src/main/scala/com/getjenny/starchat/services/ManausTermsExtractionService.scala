@@ -232,7 +232,10 @@ object ManausTermsExtractionService extends AbstractDataService {
       minSentenceInfoBit = extractionRequest.minSentenceInfoBit.getOrElse(16),
       minKeywordInfo = extractionRequest.minKeywordInfo.getOrElse(8),
       totalInfo = extractionRequest.totalInfo.getOrElse(false))
-    (tokens, bags._2)
+    bags match {
+      case(_, tokenBags) => (tokens, tokenBags)
+      case _ => (TokenizerResponse(), Map.empty[String, Double])
+    }
   }
 
   def textTermsFuture(indexName: String,

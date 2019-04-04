@@ -187,9 +187,7 @@ object DecisionTableService extends AbstractDataService {
           case None => List.empty[(String, List[String])]
         }
 
-        val ngrams = queriesAndNgrams.map(e => e._2)
-
-        val queries = queriesAndNgrams.map(e => e._1)
+        val (queries, ngrams) = queriesAndNgrams.unzip
 
         val bubble : String = source.get("bubble") match {
           case Some(t) => t.asInstanceOf[String]
