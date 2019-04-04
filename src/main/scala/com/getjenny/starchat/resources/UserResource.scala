@@ -15,6 +15,7 @@ import javax.naming.AuthenticationException
 import scala.concurrent.Future
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
+
 trait UserResource extends StarChatResource {
 
   private[this] val userService: AbstractUserService = UserService.service

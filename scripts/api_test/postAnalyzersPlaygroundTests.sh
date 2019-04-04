@@ -22,7 +22,7 @@ RES=$?
 
 # matchPatternRegex
 DATA="{\"traversedStates\": [\"one\"], \"extractedVariables\":{}}"
-ANALYZER=`echo 'band(prevTravStateIs("one"),binarize(keyword("on")),matchPatternRegex("[day,month,year](?:(0[1-9]|[12][0-9]|3[01])(?:[- \/\.])(0[1-9]|1[012])(?:[- \/\.])((?:19|20)\d\d))"))' | jq --slurp --raw-input`
+ANALYZER=$(echo 'band(prevTravStateIs("one"),binarize(keyword("on")),matchPatternRegex("[day,month,year](?:(0[1-9]|[12][0-9]|3[01])(?:[- \/\.])(0[1-9]|1[012])(?:[- \/\.])((?:19|20)\d\d))"))' | jq --slurp --raw-input)
 QUERY="test on 31-11-1900"
 curl -H "Authorization: Basic $(echo -n 'admin:adminp4ssw0rd' | base64)" \
   -H "Content-Type: application/json" -X POST "http://localhost:${PORT}/${INDEX_NAME}/analyzer/playground" -d "
