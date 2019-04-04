@@ -20,11 +20,8 @@ class LanguageGuesserAtomic (arguments: List[String], restrictedArgs: Map[String
     case _ => throw atoms.ExceptionAtomic("language guesser requires a threshold")
   }
 
-  /** Optional list of languages to match the guessed language */
-  val languages: Option[List[String]] = arguments.drop(2) match {
-    case Nil => None
-    case t: List[String] => Some(t)
-  }
+  /** Optional languages to match the guessed language */
+  val languages: List[String] = arguments.drop(2)
 
   val isEvaluateNormalized = true
 
@@ -32,15 +29,15 @@ class LanguageGuesserAtomic (arguments: List[String], restrictedArgs: Map[String
 
   override def toString: String = "languageGuesser(\"" + variableName + "\", \"" + minScoreThreshold + "\"" +
   (languages match {
-    case None => ""
-    case Some(head :: tail) => ", [\"" + tail.foldLeft(head)(_ + "\", \"" + _ ) + "\"]"
+    case Nil => ""
+    case head :: tail => ", [\"" + tail.foldLeft(head)(_ + "\", \"" + _ ) + "\"]"
   }) + ")"
 
   def evaluate(query: String, data: AnalyzersDataInternal = AnalyzersDataInternal()): Result = {
     val languageResult: LanguageResult = detector.detect(query)
     val score: Double = if(languageResult.getRawScore < minScoreThreshold) 0.0d else languages match {
-      case Some(list) => if(list.contains(languageResult.getLanguage)) 1.0d else 0.0d
-      case None => 1.0d
+      case Nil => 1.0d
+      case _ => if(languages.contains(languageResult.getLanguage)) 1.0d else 0.0d
     }
 
     Result(score, data.copy(
