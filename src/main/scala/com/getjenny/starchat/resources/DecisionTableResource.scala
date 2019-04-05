@@ -15,6 +15,7 @@ import com.getjenny.starchat.routing._
 import com.getjenny.starchat.services._
 import scalaz.Scalaz._
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.control.NonFatal
 import scala.util.{Failure, Success}
@@ -35,7 +36,9 @@ trait DecisionTableResource extends StarChatResource {
             authorizeAsync(_ =>
               authenticator.hasPermissions(user, indexName, Permissions.write)) {
               val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker()
-              onCompleteWithBreaker(breaker)(decisionTableService.deleteAll(indexName)) {
+              onCompleteWithBreaker(breaker)(
+                Future{decisionTableService.deleteAll(indexName)}
+              ) {
                 case Success(t) =>
                   completeResponse(StatusCodes.OK, StatusCodes.BadRequest, t)
                 case Failure(e) =>
@@ -365,7 +368,8 @@ trait DecisionTableResource extends StarChatResource {
                 parameters("id".as[String].*, "refresh".as[Int] ? 0) { (ids, refresh) =>
                   val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker()
                   onCompleteWithBreaker(breaker)(
-                    decisionTableService.delete(indexName, ids.toList, refresh)) {
+                    Future { decisionTableService.delete(indexName, ids.toList, refresh) }
+                  ) {
                     case Success(t) =>
                       completeResponse(StatusCodes.OK, StatusCodes.BadRequest, t)
                     case Failure(e) =>

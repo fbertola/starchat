@@ -19,9 +19,17 @@ import org.elasticsearch.client.{RequestOptions, RestHighLevelClient}
 import org.elasticsearch.common.settings._
 import org.elasticsearch.common.xcontent.XContentType
 import scalaz.Scalaz._
-
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 import scala.concurrent.Future
 import scala.io.Source
+import scalaz.Scalaz._
+
+import scala.collection.JavaConverters._
+import scala.collection.immutable.{List, Map}
+import scala.collection.{concurrent, mutable}
+import scala.concurrent.Future
+import scala.util.{Failure, Success, Try}
 
 case class IndexManagementServiceException(message: String = "", cause: Throwable = None.orNull)
   extends Exception(message, cause)
@@ -134,7 +142,6 @@ object IndexManagementService extends AbstractDataService {
       val deleteIndexRes: AcknowledgedResponse = client.indices.delete(deleteIndexReq, RequestOptions.DEFAULT)
 
       item.indexSuffix + "(" + fullIndexName + ", " + deleteIndexRes.isAcknowledged.toString + ")"
-
     })
 
     val message = "IndexDeletion: " + operationsMessage.mkString(" ")
@@ -143,29 +150,32 @@ object IndexManagementService extends AbstractDataService {
   }
 
   def check(indexName: String,
-            indexSuffix: Option[String] = None): Future[IndexManagementResponse] = Future {
+            indexSuffix: Option[String] = None): IndexManagementResponse = {
     val client: RestHighLevelClient = elasticClient.httpClient
 
-    val operationsMessage: List[String] = schemaFiles.filter(item => {
+    val operations: List[(String, Boolean)] = schemaFiles.filter{item =>
       indexSuffix match {
         case Some(t) => t === item.indexSuffix
         case _ => true
       }
-    }).map(item => {
+    }.map{item =>
       val fullIndexName = indexName + "." + item.indexSuffix
 
       val getMappingsReq: GetMappingsRequest = new GetMappingsRequest()
         .indices(fullIndexName)
 
-      val getMappingsRes: GetMappingsResponse = client.indices.getMapping(getMappingsReq, RequestOptions.DEFAULT)
+      Try(client.indices.getMapping(getMappingsReq, RequestOptions.DEFAULT)) match {
+        case Success(mappingsRes) =>
+          val check = mappingsRes.mappings.containsKey(fullIndexName)
+          (item.indexSuffix + "(" + fullIndexName + ", " + check + ")", check)
+        case Failure(exception) => (item.indexSuffix + "(" + fullIndexName + ", false)", false)
+      }
+    }
 
-      val check = getMappingsRes.mappings.containsKey(fullIndexName)
-      item.indexSuffix + "(" + fullIndexName + ", " + check + ")"
-    })
-
-    val message = "IndexCheck: " + operationsMessage.mkString(" ")
-
-    IndexManagementResponse(message)
+    val (messages, checks) = operations.unzip
+    IndexManagementResponse(message = "IndexCheck: " + messages.mkString(" "),
+      check = checks.fold(true){case (a, b) => a && b}
+    )
   }
 
   def openClose(indexName: String, indexSuffix: Option[String] = None,

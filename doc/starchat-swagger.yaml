@@ -2566,6 +2566,10 @@ components:
           type: string
           description: a response message for the index management operations
           example: message from the index
+        check:
+          type: boolean
+          description: check value
+          example: true
     FailedShards:
       type: object
       properties:

@@ -154,7 +154,6 @@ trait ElasticClient {
   val dtIndexSuffix: String = config.getString("es.dt_index_suffix")
   val kbIndexSuffix: String = config.getString("es.kb_index_suffix")
   val priorDataIndexSuffix: String = config.getString("es.prior_data_index_suffix")
-  val sysRefreshDtIndexSuffix: String = config.getString("es.system_refresh_dt_index_suffix")
   val systemRefreshDtIndexSuffix: String = config.getString("es.system_refresh_dt_index_suffix")
 
   val systemClusterNodesIndexSuffix: String = "cluster_nodes"

@@ -13,7 +13,7 @@ import com.getjenny.starchat.SCActorSystem
 import com.getjenny.starchat.entities._
 import com.getjenny.starchat.routing._
 import com.getjenny.starchat.services.QuestionAnswerService
-
+import scala.concurrent.Future
 import scala.concurrent.{ExecutionContext, Future}
 import scala.util.{Failure, Success}
 
@@ -216,7 +216,7 @@ class QAResource(questionAnswerService: QuestionAnswerService, routeName: String
                     if (request_data.ids.nonEmpty) {
                       val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker()
                       onCompleteWithBreaker(breaker)(
-                        questionAnswerService.delete(indexName, request_data.ids, refresh)) {
+                        Future { questionAnswerService.delete(indexName, request_data.ids, refresh) } ) {
                         case Success(t) =>
                           completeResponse(StatusCodes.OK, StatusCodes.BadRequest, t)
                         case Failure(e) =>
@@ -228,7 +228,8 @@ class QAResource(questionAnswerService: QuestionAnswerService, routeName: String
                       }
                     } else {
                       val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker()
-                      onCompleteWithBreaker(breaker)(questionAnswerService.deleteAll(indexName)) {
+                      onCompleteWithBreaker(breaker)(
+                        Future { questionAnswerService.deleteAll(indexName) } ) {
                         case Success(t) =>
                           completeResponse(StatusCodes.OK, StatusCodes.BadRequest, t)
                         case Failure(e) =>
@@ -245,32 +246,32 @@ class QAResource(questionAnswerService: QuestionAnswerService, routeName: String
             }
           }
       } ~
-      put {
-        authenticateBasicAsync(realm = authRealm,
-          authenticator = authenticator.authenticator) { user =>
-          extractRequest { request =>
-            authorizeAsync(_ =>
-              authenticator.hasPermissions(user, indexName, Permissions.write)) {
-              parameters("refresh".as[Int] ? 0) { refresh =>
-                entity(as[QADocumentUpdate]) { update =>
-                  val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker()
-                  onCompleteWithBreaker(breaker)(questionAnswerService.updateFuture(indexName, update, refresh)) {
-                    case Success(t) =>
-                      completeResponse(StatusCodes.Created, StatusCodes.BadRequest, t)
-                    case Failure(e) =>
-                      log.error("index(" + indexName + ") uri=(" + request.uri +
-                        ") method=(" + request.method.name + ") : " + e.getMessage)
-                      completeResponse(StatusCodes.BadRequest,
-                        Option {
-                          ReturnMessageData(code = 108, message = e.getMessage)
-                        })
+        put {
+          authenticateBasicAsync(realm = authRealm,
+            authenticator = authenticator.authenticator) { user =>
+            extractRequest { request =>
+              authorizeAsync(_ =>
+                authenticator.hasPermissions(user, indexName, Permissions.write)) {
+                parameters("refresh".as[Int] ? 0) { refresh =>
+                  entity(as[QADocumentUpdate]) { update =>
+                    val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker()
+                    onCompleteWithBreaker(breaker)(questionAnswerService.updateFuture(indexName, update, refresh)) {
+                      case Success(t) =>
+                        completeResponse(StatusCodes.Created, StatusCodes.BadRequest, t)
+                      case Failure(e) =>
+                        log.error("index(" + indexName + ") uri=(" + request.uri +
+                          ") method=(" + request.method.name + ") : " + e.getMessage)
+                        completeResponse(StatusCodes.BadRequest,
+                          Option {
+                            ReturnMessageData(code = 108, message = e.getMessage)
+                          })
+                    }
                   }
                 }
               }
             }
           }
         }
-      }
     }
   }
 

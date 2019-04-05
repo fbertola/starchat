@@ -11,6 +11,7 @@ import com.getjenny.starchat.entities._
 import com.getjenny.starchat.routing._
 import com.getjenny.starchat.services.IndexManagementService
 
+import scala.concurrent.Future
 import scala.concurrent.duration._
 import scala.util.{Failure, Success}
 
@@ -151,7 +152,7 @@ trait IndexManagementResource extends StarChatResource {
                 parameters("indexSuffix".as[Option[String]] ? Option.empty[String]) { indexSuffix =>
                   val breaker: CircuitBreaker = StarChatCircuitBreaker.getCircuitBreaker()
                   onCompleteWithBreaker(breaker)(
-                    indexManagementService.check(indexName = indexName, indexSuffix = indexSuffix)
+                    Future { indexManagementService.check(indexName = indexName, indexSuffix = indexSuffix) }
                   ) {
                     case Success(t) => completeResponse(StatusCodes.OK, StatusCodes.BadRequest, Option {
                       t

@@ -204,7 +204,7 @@ trait JsonSupport extends SprayJsonSupport with DefaultJsonProtocol {
   implicit val dtAnalyzerItemFormat = jsonFormat4(DTAnalyzerItem)
   implicit val dtAnalyzerMapFormat = jsonFormat1(DTAnalyzerMap)
   implicit val dtAnalyzerLoadFormat = jsonFormat1(DTAnalyzerLoad)
-  implicit val indexManagementResponseFormat = jsonFormat1(IndexManagementResponse)
+  implicit val indexManagementResponseFormat = jsonFormat2(IndexManagementResponse)
   implicit val languageGuesserRequestInFormat = jsonFormat1(LanguageGuesserRequestIn)
   implicit val languageGuesserRequestOutFormat = jsonFormat4(LanguageGuesserRequestOut)
   implicit val languageGuesserInformationsFormat = jsonFormat1(LanguageGuesserInformations)
